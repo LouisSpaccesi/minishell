@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   echo.c                                             :+:      :+:    :+:   */
+/*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/21 15:04:38 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/24 16:14:56 by lospacce         ###   ########.fr       */
+/*   Created: 2025/03/24 16:19:08 by lospacce          #+#    #+#             */
+/*   Updated: 2025/03/24 17:11:58 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
-// #include "./libft/libft.h"
 #include <stdio.h>
-#include "./pwd.c"
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 int	ft_strncmp(const char *s1, const char *s2, size_t n)
 {
@@ -22,40 +22,28 @@ int	ft_strncmp(const char *s1, const char *s2, size_t n)
 	i = 0;
 	if (n == 0)
 		return (0);
-	while (s1[i] == s2[i] && s1[i] && i < n)
-	{
+	while (s1[i] == s2[i] && s1[i] && i < n - 1)
 		i++;
-	}
-	if (n == i)
-		return (0);
 	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
-}
-
-int ft_echo(int argc, char **argv)
-{
-    int i;
-	int x;
-	
-	i = 1;
-	x = 0;
-	
-	while(i < argc)
-	{
-		if (ft_strncmp(argv[i], "$PWD", 4) == 0)
-		{
-			ft_pwd();
-			return (0);
-		}
-		printf("%s", argv[i]);
-		if(!argv[i + 1] == '\0')
-			printf(" ");
-		i++;
-	}
-	printf("\n");
-	return (0);
 }
 
 int main(int argc, char **argv)
 {
-	ft_echo(argc, argv);
+	char buffer[256];
+	char *path;
+
+	if (argc == 2 && ft_strncmp(argv[1], "cd", 2) == 0)
+	{
+		path = getenv("HOME");
+		if (!path)
+			path = "/home";
+	}
+	else if (argc == 3 && ft_strncmp(argv[1], "cd", 2) == 0)
+		path = argv[2];
+	if (chdir(path) != 0)
+		return (0);
+	if (getcwd(buffer, sizeof(buffer)) == NULL)
+		return (0);
+	printf("pwd = %s\n", buffer);
+	return 0;
 }

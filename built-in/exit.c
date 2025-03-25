@@ -1,26 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pwd.c                                              :+:      :+:    :+:   */
+/*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/21 14:50:49 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/24 13:00:30 by lospacce         ###   ########.fr       */
+/*   Created: 2025/03/24 16:22:23 by lospacce          #+#    #+#             */
+/*   Updated: 2025/03/24 16:26:02 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <stdio.h>
+#include <stdlib.h>
 
-void ft_pwd()
+void ft_exit()
 {
-    char pwd[1024];
-    getcwd(pwd, sizeof(pwd));
-    printf("%s\n", pwd);
+	exit(EXIT_SUCCESS);
 }
 
-// int main() 
-// {
-//     ft_pwd();    
-// }
+int main()
+{
+	ft_exit();
+}
