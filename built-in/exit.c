@@ -3,21 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:22:23 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/24 16:26:02 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/25 16:30:06 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdlib.h>
+#include "minishell.h"
 
 void ft_exit()
 {
 	exit(EXIT_SUCCESS);
-}
-
-int main()
-{
-	ft_exit();
 }

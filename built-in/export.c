@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:10:52 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/24 16:11:01 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/25 16:30:06 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-void ft_export()
-{
+// void ft_export()
+// {
 	
-}
+// }

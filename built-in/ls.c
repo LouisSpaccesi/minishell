@@ -1,35 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   echo.c                                             :+:      :+:    :+:   */
+/*   ls.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/21 15:04:38 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/25 16:53:59 by lospacce         ###   ########.fr       */
+/*   Created: 2025/03/25 15:00:46 by lospacce          #+#    #+#             */
+/*   Updated: 2025/03/25 16:30:06 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "minishell.h"
 
-int ft_echo(int argc, char **argv)
+int ft_ls(int argc, char **argv, char **envp)
 {
-    int i;
-	
-	i = 1;
-	
-	while(i < argc)
-	{
-		if (ft_strncmp(argv[i], "$PWD", 4) == 0)
-		{
-			ft_pwd();
-			return (0);
-		}
-		printf("%s", argv[i]);
-		if(!argv[i + 1] == '\0')
-			printf(" ");
-		i++;
-	}
-	printf("\n");
-	return (0);
+    char **args; 
+
+    args = malloc(2 * sizeof(char *));
+    if (!args)
+        return (1);
+    args[0] = "/bin/ls";
+    args[1] = NULL;
+    execve(args[0], args, envp); 
+    perror("execve"); 
+    return (EXIT_FAILURE);
 }
