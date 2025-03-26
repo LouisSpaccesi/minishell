@@ -6,7 +6,7 @@
 /*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 14:17:26 by fben-ham          #+#    #+#             */
-/*   Updated: 2025/03/26 17:31:42 by fben-ham         ###   ########.fr       */
+/*   Updated: 2025/03/26 17:34:08 by fben-ham         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void signal_handle(int sig)
 /*
 Setup le traitement des signaux pour ctrl c et / 
 */
-void setup_signal(void)
+void set_interactive_signal(void)
 {
     struct sigaction action;
     
@@ -78,14 +78,17 @@ int main()
     
     while(1)
     {
-        setup_signal(); // regroupe sigaction pour les differents cas : ctrl+c et ctrl+/
+        set_interactive_signal(); // regroupe sigaction pour les differents cas : ctrl+c et ctrl+/
         rl = readline("MissionLocale> ");
         if(!rl)
             break; // en cas de EOF (ctrl+d)
         if(*rl) // uniquement si pleine
         {
-            set_noninteractive_signal();
             add_history(rl);
+            // FUTUR : traite la commande
+            set_noninteractive_signal();
+            // FUTUR : exec la commande
+            g_received_signal = 0; // remise a 0, retour au mode inter
         }
 
         free(rl);
