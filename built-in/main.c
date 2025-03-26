@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/24 18:56:00 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/26 14:18:54 by fben-ham         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,8 @@ int	main(int argc, char **argv, char **envp)
 	i = 0;
 	while (1)
 	{
-		rl = readline("minishell > ");
-		add_history(rl);
+		rl = readline("minishell > "); // prompt
+		add_history(rl); // save history
 		if (ft_strncmp(rl, "exit", 4) == 0)
 			ft_exit();
 		if (ft_strncmp(rl, "env", 3) == 0)
