@@ -6,7 +6,7 @@
 /*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 14:17:26 by fben-ham          #+#    #+#             */
-/*   Updated: 2025/03/26 17:27:28 by fben-ham         ###   ########.fr       */
+/*   Updated: 2025/03/26 17:31:42 by fben-ham         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void set_noninteractive_signal(void)
     action.sa_flags = 0;
     action.sa_handler = SIG_DFL;
     sigaction(SIGINT, &action,NULL);
-    sigaction(SIGINT, &action,NULL);
+    sigaction(SIGQUIT, &action,NULL);
 }
 
 
