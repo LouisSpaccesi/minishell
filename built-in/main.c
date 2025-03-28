@@ -3,82 +3,98 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/25 16:53:59 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/26 16:06:16 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	ft_strncmp(const char *s1, const char *s2, size_t n)
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
+/*   Updated: 2025/03/26 14:46:07 by lospacce         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "minishell.h"
+
+char **copy_all_env(char **envp)
 {
-	size_t	i;
+    int i;
+    char **new_env;
 
 	i = 0;
-	if (n == 0)
-		return (0);
-	while (s1[i] == s2[i] && s1[i] && i < n)
-	{
-		i++;
-	}
-	if (n == i)
-		return (0);
-	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
-}
-
-int ft_ls(int argc, char **argv, char **envp)
-{
-    (void)argc;
-    (void)argv;
-    int status;
-    char **args = malloc(3 * sizeof(char *));
-    
-    args[0] = "/usr/bin/ls";
-    args[1] = "-la";
-    args[2] = NULL;
-    pid_t pid = fork();
-    if (pid == -1)
+    while (envp[i])
+        i++;
+    new_env = malloc((i + 1) * sizeof(char *));
+    if (!new_env)
+        return (NULL);
+    i = 0;
+    while (envp[i]) 
     {
-        perror("fork");
-        free(args);
-        return EXIT_FAILURE;
-    }
-    if (pid == 0)
-    {
-        if (execve(args[0], args, envp) == -1)
+        new_env[i] = ft_strdup(envp[i]);
+        if (!new_env[i])
         {
-            perror("execve");
-            free(args);
-            exit(EXIT_FAILURE);
+            while (--i >= 0)
+                free(new_env[i]);
+            free(new_env);
+            return (NULL);
         }
+        i++;
     }
-    else
-    {
-        waitpid(pid, &status, 0);
-        free(args);
-    }
-    return EXIT_SUCCESS;
+    new_env[i] = NULL; 
+    return (new_env);
 }
 
+void free_env(char **env)
+{
+    int i = 0;
+    
+    if (!env)
+        return; 
+    while (env[i])
+    {
+        free(env[i]);
+        i++;
+    }
+    free(env);
+}
 
 int	main(int argc, char **argv, char **envp)
 {
 	char *rl;
-
+    char **env_copy;
+    
+    env_copy = copy_all_env(envp);
 	while (1)
 	{
 		rl = readline("minishell > ");
+        if (!rl)
+        {
+            printf("exit\n");
+            break;
+        }
 		add_history(rl);
 		if (ft_strncmp(rl, "exit", 4) == 0)
-			ft_exit();
+		{
+		    free(rl);
+		    break;
+		}
 		if (ft_strncmp(rl, "env", 3) == 0)
-			ft_env(argc, argv, envp);
+			ft_env(env_copy);
 		if (ft_strncmp(rl, "pwd", 4) == 0)
 			ft_pwd();
 		if (ft_strncmp(rl, "ls", 2) == 0)
-			ft_ls(argc, argv, envp);
+			ft_ls(argc, argv, env_copy);
 		if (ft_strncmp(rl, "echo", 4) == 0)
 		{
 			if (strstr(rl, "$PWD") != 0)
@@ -89,7 +105,13 @@ int	main(int argc, char **argv, char **envp)
 				printf("\n");
 		}
 		if (ft_strncmp(rl, "cd", 2) == 0)
-			ft_cd(argc, argv, envp);
+			ft_cd(rl);
+		if (ft_strncmp(rl, "export", 6) == 0)
+			ft_export(rl, &env_copy);
+		if (ft_strncmp(rl, "unset", 5) == 0)
+			ft_unset_command(rl, &env_copy);
 		free(rl);
 	}
+	free_env(env_copy);
+	return (EXIT_SUCCESS);
 }

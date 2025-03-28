@@ -4,27 +4,51 @@ CFLAGS = -Wall -Wextra -Werror
 
 READLINE_FLAGS = -lreadline
 
-SRCS = main.c cd.c echo.c env.c exit.c pwd.c
+# Adjusted libft path based on your actual structure
+LIBFT_PATH = ../libft
+LIBFT = $(LIBFT_PATH)/libft.a
 
-OBJS = $(SRCS:.c=.o)
+# Separate main.c from other source files to avoid duplicate compilation
+BUILTIN_SRCS = cd.c echo.c env.c exit.c pwd.c export.c ls.c unset.c
+BUILTIN_OBJS = $(BUILTIN_SRCS:.c=.o)
 
-HEADERS = minishell.h
+INCLUDES = -I. -I$(LIBFT_PATH)
 
 NAME = minishell
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(READLINE_FLAGS)
+$(LIBFT):
+	@if [ -d $(LIBFT_PATH) ]; then \
+		make -C $(LIBFT_PATH); \
+	else \
+		echo "Error: Directory $(LIBFT_PATH) does not exist."; \
+		exit 1; \
+	fi
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+# Fixed the dependency on libft and removed duplicate compilation of main.c
+$(NAME): $(BUILTIN_OBJS) main.o $(LIBFT)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(NAME) main.o $(BUILTIN_OBJS) $(LIBFT) $(READLINE_FLAGS)
+	@echo "Compiled $(NAME) successfully"
+
+# Separate rule for main.o to avoid duplicate compilation
+main.o: main.c minishell.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+%.o: %.c minishell.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(BUILTIN_OBJS) main.o libbuiltins.a
+	@if [ -d $(LIBFT_PATH) ]; then \
+		make -C $(LIBFT_PATH) clean; \
+	fi
 
 fclean: clean
 	rm -f $(NAME)
+	@if [ -d $(LIBFT_PATH) ]; then \
+		make -C $(LIBFT_PATH) fclean; \
+	fi
 
 re: fclean all
 
