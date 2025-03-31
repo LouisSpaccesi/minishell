@@ -6,22 +6,7 @@
 /*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/26 16:06:16 by lospacce         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "minishell.h"
-
-
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/26 14:46:07 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/31 12:03:06 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +56,11 @@ void free_env(char **env)
 
 int	main(int argc, char **argv, char **envp)
 {
+    (void)argc;
+    (void)argv;
 	char *rl;
     char **env_copy;
+	char **args;
     
     env_copy = copy_all_env(envp);
 	while (1)
@@ -93,8 +81,30 @@ int	main(int argc, char **argv, char **envp)
 			ft_env(env_copy);
 		if (ft_strncmp(rl, "pwd", 4) == 0)
 			ft_pwd();
-		if (ft_strncmp(rl, "ls", 2) == 0)
-			ft_ls(argc, argv, env_copy);
+		if (ft_strncmp(rl, "ls", 2) == 0 && (rl[2] == ' ' || rl[2] == '\0'))
+		{
+			args = ft_split(rl, ' ');
+			ft_ls(0, args + 1, env_copy);
+			free_array(args);
+		}
+		else if (ft_strncmp(rl, "grep", 4) == 0 && (rl[4] == ' ' || rl[4] == '\0'))
+		{
+			args = ft_split(rl, ' ');
+			ft_grep(0, args + 1, env_copy);
+			free_array(args);
+		}
+		else if (ft_strncmp(rl, "cat", 3) == 0 && (rl[3] == ' ' || rl[3] == '\0'))
+		{
+			args = ft_split(rl, ' ');
+			ft_cat(0, args + 1, env_copy);
+			free_array(args);
+		}
+		else if (ft_strncmp(rl, "touch", 5) == 0 && (rl[5] == ' ' || rl[5] == '\0'))
+		{
+			args = ft_split(rl, ' ');
+			ft_touch(0, args + 1, env_copy);
+			free_array(args);
+		}
 		if (ft_strncmp(rl, "echo", 4) == 0)
 		{
 			if (strstr(rl, "$PWD") != 0)
@@ -110,6 +120,30 @@ int	main(int argc, char **argv, char **envp)
 			ft_export(rl, &env_copy);
 		if (ft_strncmp(rl, "unset", 5) == 0)
 			ft_unset_command(rl, &env_copy);
+		else if (ft_strncmp(rl, "rm", 2) == 0 && (rl[2] == ' ' || rl[2] == '\0'))
+		{
+			args = ft_split(rl, ' ');
+			ft_rm(0, args + 1, env_copy);
+			free_array(args);
+		}
+		else if (ft_strncmp(rl, "mkdir", 5) == 0 && (rl[5] == ' ' || rl[5] == '\0'))
+		{
+		    args = ft_split(rl, ' ');
+		    ft_mkdir(0, args + 1, env_copy);
+		    free_array(args);
+		}
+		else if (ft_strncmp(rl, "rmdir", 5) == 0 && (rl[5] == ' ' || rl[5] == '\0'))
+		{
+		    args = ft_split(rl, ' ');
+		    ft_rmdir(0, args + 1, env_copy);
+		    free_array(args);
+		}
+		else if (ft_strncmp(rl, "wc", 2) == 0 && (rl[2] == ' ' || rl[2] == '\0'))
+		{
+			args = ft_split(rl, ' ');
+			ft_wc(0, args + 1, env_copy);
+			free_array(args);
+		}
 		free(rl);
 	}
 	free_env(env_copy);

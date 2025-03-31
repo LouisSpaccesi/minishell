@@ -1,21 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ls.c                                               :+:      :+:    :+:   */
+/*   exec_external.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/25 15:00:46 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/31 11:54:14 by lospacce         ###   ########.fr       */
+/*   Created: 2025/03/26 16:30:00 by lospacce          #+#    #+#             */
+/*   Updated: 2025/03/31 11:51:09 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int ft_ls(int argc, char **argv, char **envp)
+void free_array(char **array)
 {
-    (void)argc;
-    (void)argv;
-    
-    return (exec_command("ls", argv, envp));
-}
+    if (!array)
+        return;
+    free(array);
+} 

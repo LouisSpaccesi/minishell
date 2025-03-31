@@ -6,7 +6,7 @@
 /*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/26 16:04:34 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/31 11:56:14 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,5 +38,17 @@ char 	*create_env(const char *var, const char *value);
 void 	copy_env(char **new_env, char **env, int count);
 int 	replace_var(char **env, char *var, char *new_entry);
 void ft_unset_command(char *rl, char ***env);
+int     exec_external_cmd(char *cmd_path, char **args, char **envp);
+void    free_array(char **array);
+int     ft_grep(int argc, char **argv, char **envp);
+int     ft_cat(int argc, char **argv, char **envp);
+int     ft_touch(int argc, char **argv, char **envp);
+char    *get_path_env(char **envp);
+char    *find_command_path(char *cmd, char **envp);
+int     exec_command(char *cmd, char **args, char **envp);
+int     ft_rm(int argc, char **argv, char **envp);
+int 	ft_mkdir(int argc, char **argv, char **envp);
+int 	ft_rmdir(int argc, char **argv, char **envp);
+int 	ft_wc(int argc, char **argv, char **envp);
 
 #endif
