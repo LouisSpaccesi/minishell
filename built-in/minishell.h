@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/31 11:56:14 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/03/31 15:05:32 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@
 # include <readline/history.h>
 # include <errno.h>
 # include "../libft/libft.h"
+
+// typedef struct t_data
+// {
+//     int 
+// }       s_data;
 
 
 int     ft_strncmp(const char *s1, const char *s2, size_t n);
@@ -45,10 +50,11 @@ int     ft_cat(int argc, char **argv, char **envp);
 int     ft_touch(int argc, char **argv, char **envp);
 char    *get_path_env(char **envp);
 char    *find_command_path(char *cmd, char **envp);
-int     exec_command(char *cmd, char **args, char **envp);
+int	exec_command(char **argv, char **envp);
 int     ft_rm(int argc, char **argv, char **envp);
 int 	ft_mkdir(int argc, char **argv, char **envp);
 int 	ft_rmdir(int argc, char **argv, char **envp);
 int 	ft_wc(int argc, char **argv, char **envp);
+int parse_args(char **args, char **envp);
 
 #endif
