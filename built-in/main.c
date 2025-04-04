@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/31 15:16:28 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/04 15:33:01 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,55 +74,34 @@ int	main(int argc, char **argv, char **envp)
     
     env_copy = copy_all_env(envp);
 	while (1)
-	{
-    rl = readline("minishell > ");
-    if (!rl)
     {
-        printf("exit\n");
-        break;
-    }
-    
-    add_history(rl);
-    
-    if (ft_strncmp(rl, "exit", 4) == 0)
-    {
-        free(rl);
-        break;
-    }
-    
-    args = ft_split(rl, ' ');
-    if (args && args[0])
-    {
-        if (ft_strncmp(args[0], "env", 4) == 0)
-            ft_env(env_copy);
-        else if (ft_strncmp(args[0], "pwd", 4) == 0)
-            ft_pwd();
-        else if (ft_strncmp(args[0], "echo", 5) == 0)
+        rl = readline("minishell > ");
+        if (!rl)
         {
-            if (args[1] && strstr(args[1], "$PWD") != 0)
-                ft_pwd();
-            else
-            {
-                char *echo_text = rl + 5;
-                while (*echo_text && (*echo_text == ' ' || *echo_text == '\t'))
-                    echo_text++;
-                
-                if (*echo_text)
-                    printf("%s\n", echo_text);
-                else
-                    printf("\n");
-            }
+            printf("exit\n");
+            break;
         }
-        else if (ft_strncmp(args[0], "cd", 3) == 0)
-            ft_cd(rl); 
-        else if (ft_strncmp(args[0], "export", 7) == 0)
-            ft_export(rl, &env_copy);
-        else if (ft_strncmp(args[0], "unset", 6) == 0)
-            ft_unset_command(rl, &env_copy); 
-        else
-            parse_args(args, env_copy);
+        add_history(rl);
+        if (ft_strncmp(rl, "exit", 4) == 0)
+        {
+            free(rl);
+            break;
+        }
+        args = ft_split(rl, ' ');
+        if (args && args[0])
+            execute_command_with_redirection(args, env_copy);
+        free(rl);
+        if (args)
+        {
+            int i = 0;
+            while (args[i])
+            {
+                free(args[i]);
+                i++;
+            }
+            free(args);
+        }
     }
-}
 	free_env(env_copy);
 	return (EXIT_SUCCESS);
 }

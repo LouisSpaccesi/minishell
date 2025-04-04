@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/31 15:05:32 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/04 15:36:11 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # include <readline/history.h>
 # include <errno.h>
 # include "../libft/libft.h"
+# include <fcntl.h>
 
 // typedef struct t_data
 // {
@@ -41,20 +42,25 @@ void    ft_exit();
 void 	ft_export(char *rl, char ***env_ptr);
 char 	*create_env(const char *var, const char *value);
 void 	copy_env(char **new_env, char **env, int count);
-int 	replace_var(char **env, char *var, char *new_entry);
 void ft_unset_command(char *rl, char ***env);
-int     exec_external_cmd(char *cmd_path, char **args, char **envp);
 void    free_array(char **array);
-int     ft_grep(int argc, char **argv, char **envp);
-int     ft_cat(int argc, char **argv, char **envp);
-int     ft_touch(int argc, char **argv, char **envp);
 char    *get_path_env(char **envp);
 char    *find_command_path(char *cmd, char **envp);
 int	exec_command(char **argv, char **envp);
-int     ft_rm(int argc, char **argv, char **envp);
-int 	ft_mkdir(int argc, char **argv, char **envp);
-int 	ft_rmdir(int argc, char **argv, char **envp);
-int 	ft_wc(int argc, char **argv, char **envp);
-int parse_args(char **args, char **envp);
+int     parse_args(char **args, char **envp);
+int     ft_redirect_output(char *filename);
+void    ft_restore_output(int saved_stdout);
+int     execute_command_with_redirection(char **args, char **env_copy);
+int     ft_strcmp(const char *s1, const char *s2); 
+int     is_builtin(char *cmd);
+int execute_command_with_redirection(char **args, char **env_copy);
+void handle_complex_builtins(char **args, char **env_copy);
+void handle_env_builtins(char **args, char ***env_copy);
+void handle_echo_cd(char **args);
+int handle_redirection(char **args, int *saved_stdout);
+
+
+
+
 
 #endif

@@ -1,0 +1,100 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_builtin.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/04 15:31:59 by lospacce          #+#    #+#             */
+/*   Updated: 2025/04/04 16:11:36 by lospacce         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "minishell.h"
+
+void handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
+{
+    if (ft_strncmp(args[0], "env", 4) == 0)
+        ft_env(env_copy);
+    else if (ft_strncmp(args[0], "pwd", 4) == 0)
+        ft_pwd();
+    else if (ft_strncmp(args[0], "exit", 5) == 0)
+    {
+        if (saved_stdout != -1)
+            ft_restore_output(saved_stdout);
+        ft_exit();
+    }
+}
+
+void handle_echo_cd(char **args)
+{
+    int argc;
+
+    if (ft_strncmp(args[0], "echo", 5) == 0)
+    {
+        argc = 0;
+        while (args[argc])
+            argc++;
+        ft_echo(argc, args);
+    }
+    else if (ft_strncmp(args[0], "cd", 3) == 0)
+    {
+        char cmd[1024];
+        ft_strcpy(cmd, "cd ");
+        if (args[1])
+            ft_strcat(cmd, args[1]);
+        ft_cd(cmd);
+    }
+}
+
+void handle_env_builtins(char **args, char ***env_copy)
+{
+    if (ft_strncmp(args[0], "export", 7) == 0)
+    {
+        char cmd[1024];
+        ft_strcpy(cmd, "export ");
+        if (args[1])
+            ft_strcat(cmd, args[1]);
+        ft_export(cmd, env_copy);
+    }
+    else if (ft_strncmp(args[0], "unset", 6) == 0)
+    {
+        char cmd[1024];
+        ft_strcpy(cmd, "unset ");
+        if (args[1])
+            ft_strcat(cmd, args[1]);
+        ft_unset_command(cmd, env_copy);
+    }
+}
+
+void handle_complex_builtins(char **args, char **env_copy)
+{
+    if (ft_strncmp(args[0], "echo", 5) == 0 || ft_strncmp(args[0], "cd", 3) == 0)
+        handle_echo_cd(args);
+    else
+        handle_env_builtins(args, &env_copy);
+}
+
+int execute_command_with_redirection(char **args, char **env_copy)
+{
+    int saved_stdout;
+    
+    saved_stdout = -1;
+    if (handle_redirection(args, &saved_stdout) != 0)
+        return (1);
+    if (is_builtin(args[0]))
+    {
+        if (ft_strncmp(args[0], "env", 4) == 0 || 
+            ft_strncmp(args[0], "pwd", 4) == 0 || 
+            ft_strncmp(args[0], "exit", 5) == 0)
+            handle_simple_builtins(args, env_copy, saved_stdout);
+        else
+            handle_complex_builtins(args, env_copy);
+    }
+    else
+        parse_args(args, env_copy);
+    if (saved_stdout != -1)
+        ft_restore_output(saved_stdout);
+    
+    return (0);
+}
