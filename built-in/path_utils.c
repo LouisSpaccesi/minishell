@@ -127,7 +127,7 @@ static int handle_command_not_found(char *cmd)
 	return (0);
 }
 
-static int count_args(char **args)
+static int count_cmd_args(char **args)
 {
 	int i;
 	
@@ -161,7 +161,7 @@ int exec_command(char **argv, char **envp)
 
     if (!argv || !argv[0])
         return (1);
-    arg_count = count_args(argv);
+    arg_count = count_cmd_args(argv);
     cmd_path = find_command_path(argv[0], envp);
     if (!cmd_path)
         return (handle_command_not_found(argv[0]));

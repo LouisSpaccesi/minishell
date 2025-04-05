@@ -79,6 +79,10 @@ int     handle_redirection(char **args, int *saved_stdout);
 
 /* Fonctions spécifiques pour les cas complexes */
 int     execute_heredoc_pipe(char **args, char **env_copy);
+int     execute_heredoc_pipe_part2(char **args, int heredoc_idx, int pipe_idx, char *temp_file);
+int     execute_heredoc_pipe_part3(char **args, int pipe_idx, int temp_fd, char **cmd1, char *temp_file);
+int     execute_heredoc_pipe_part4(char **cmd1, char **cmd2, int temp_fd, int *pipefd, char *temp_file);
+int     execute_heredoc_pipe_part5(pid_t pid1, pid_t pid2, int *pipefd, char **cmd1, char **cmd2, int temp_fd, char *temp_file);
 
 /* Fonctions de gestion des pipes */
 int     count_pipes(char **args);
@@ -86,7 +90,16 @@ char    ***split_command_by_pipes(char **args);
 void    free_command_segments(char ***cmd_segments);
 int     execute_simple_command(char **args, char **env_copy);
 int     execute_piped_commands(char ***cmd_segments, char **env_copy);
+int     execute_piped_commands_part1(char ***cmd_segments, char **env_copy);
+int     execute_piped_commands_part2(char ***cmd_segments, char **env_copy, int pipe_count);
+int     wait_for_children(int pipe_count);
 int     execute_command(char **args, char **env_copy);
+int     execute_command_part1(char **args, char **env_copy);
+int     execute_command_part2(char **args, char **env_copy);
+
+/* Fonctions utilitaires */
+int     count_args(char **args, int start);
+void    close_and_free(int *pipefd, char **cmd1, char **cmd2, int temp_fd);
 
 
 
