@@ -19,12 +19,17 @@ static void print_echo_arg(char *arg)
     
     len = ft_strlen(arg);
     if (ft_strncmp(arg, "$PWD", 4) == 0)
-        ft_pwd();
+        ft_pwd_no_nl();
     else if (len >= 2 && arg[0] == '"' && arg[len - 1] == '"')
     {
         ft_strlcpy(temp, arg + 1, len);
         temp[len - 2] = '\0';
-        printf("%s", temp);
+        
+        // Vérifier si le contenu entre guillemets est $PWD
+        if (ft_strncmp(temp, "$PWD", 4) == 0)
+            ft_pwd_no_nl();
+        else
+            printf("%s", temp);
     }
     else
         printf("%s", arg);
@@ -33,8 +38,18 @@ static void print_echo_arg(char *arg)
 int ft_echo(int argc, char **argv)
 {
     int i;
+    int no_newline;
     
     i = 1;
+    no_newline = 0;
+    
+    // Vérifier l'option -n
+    if (i < argc && ft_strncmp(argv[i], "-n", 3) == 0)
+    {
+        no_newline = 1;
+        i++;
+    }
+    
     while(i < argc)
     {
         print_echo_arg(argv[i]);
@@ -42,6 +57,9 @@ int ft_echo(int argc, char **argv)
             printf(" ");
         i++;
     }
-    printf("\n");
+    
+    // Ajouter un retour à la ligne uniquement si l'option -n n'est pas spécifiée
+    if (!no_newline)
+        printf("\n");
     return (0);
 }

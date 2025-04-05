@@ -22,6 +22,7 @@ int is_builtin(char *cmd)
             ft_strncmp(cmd, "env", 4) == 0 ||
             ft_strncmp(cmd, "exit", 5) == 0);
 }
+
 char **copy_all_env(char **envp)
 {
     int i;
@@ -64,17 +65,66 @@ void free_env(char **env)
     free(env);
 }
 
+t_shell *init_shell(char **envp)
+{
+    t_shell *shell;
+    
+    shell = malloc(sizeof(t_shell));
+    if (!shell)
+        return (NULL);
+    shell->env = copy_all_env(envp);
+    if (!shell->env)
+    {
+        free(shell);
+        return (NULL);
+    }
+    shell->exit_status = 0;
+    shell->saved_stdout = -1;
+    shell->saved_stdin = -1;
+    shell->original_stdin = dup(STDIN_FILENO);
+    if (shell->original_stdin == -1)
+    {
+        free_env(shell->env);
+        free(shell);
+        return (NULL);
+    }
+    
+    return (shell);
+}
+
+void free_shell(t_shell *shell)
+{
+    if (!shell)
+        return;
+    free_env(shell->env);
+    
+    // Fermer le descripteur original stdin s'il est encore ouvert
+    if (shell->original_stdin != -1)
+        close(shell->original_stdin);
+    
+    free(shell);
+}
+
 int	main(int argc, char **argv, char **envp)
 {
     (void)argc;
     (void)argv;
-	char *rl;
-    char **env_copy;
-	char **args;
+    char *rl;
+    char **args;
+    t_shell *shell;
     
-    env_copy = copy_all_env(envp);
-	while (1)
+    shell = init_shell(envp);
+    if (!shell)
     {
+        return (EXIT_FAILURE);
+    }
+    
+    while (1)
+    {
+        // Restaurer l'entrée standard originale avant de lire la prochaine commande
+        // Cela garantit que readline fonctionnera correctement même après un heredoc
+        dup2(shell->original_stdin, STDIN_FILENO);
+        
         rl = readline("minishell > ");
         if (!rl)
         {
@@ -89,7 +139,7 @@ int	main(int argc, char **argv, char **envp)
         }
         args = ft_split(rl, ' ');
         if (args && args[0])
-            execute_command_with_redirection(args, env_copy);
+            execute_command(args, shell->env);
         free(rl);
         if (args)
         {
@@ -102,6 +152,6 @@ int	main(int argc, char **argv, char **envp)
             free(args);
         }
     }
-	free_env(env_copy);
-	return (EXIT_SUCCESS);
+    free_shell(shell);
+    return (EXIT_SUCCESS);
 }

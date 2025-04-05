@@ -77,12 +77,22 @@ void handle_complex_builtins(char **args, char **env_copy)
 
 int execute_command_with_redirection(char **args, char **env_copy)
 {
+    t_command cmd;
     int saved_stdout;
     
+    // Initialisation de la structure command
+    cmd.args = args;
+    cmd.is_builtin = is_builtin(args[0]);
+    cmd.redirection = 0;
+    cmd.redir_file = NULL;
+    
+    // Sauvegarde stdout pour la redirection
     saved_stdout = -1;
+    
     if (handle_redirection(args, &saved_stdout) != 0)
         return (1);
-    if (is_builtin(args[0]))
+        
+    if (cmd.is_builtin)
     {
         if (ft_strncmp(args[0], "env", 4) == 0 || 
             ft_strncmp(args[0], "pwd", 4) == 0 || 
@@ -93,6 +103,7 @@ int execute_command_with_redirection(char **args, char **env_copy)
     }
     else
         parse_args(args, env_copy);
+        
     if (saved_stdout != -1)
         ft_restore_output(saved_stdout);
     

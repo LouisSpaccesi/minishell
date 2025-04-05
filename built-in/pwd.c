@@ -20,6 +20,14 @@ void ft_pwd()
     printf("%s\n", pwd);
 }
 
+// Version sans retour à la ligne pour l'utilisation avec pipes
+void ft_pwd_no_nl()
+{
+    char pwd[1024];
+    getcwd(pwd, sizeof(pwd));
+    printf("%s", pwd);
+}
+
 // int main() 
 // {
 //     ft_pwd();    
