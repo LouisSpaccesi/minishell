@@ -3,32 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   pwd.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 14:50:49 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/24 13:00:30 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/09 13:59:25 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
 
-void ft_pwd()
+void	ft_pwd(void)
 {
-    char pwd[1024];
-    getcwd(pwd, sizeof(pwd));
-    printf("%s\n", pwd);
+	char	pwd[1024];
+
+	getcwd(pwd, sizeof(pwd));
+	printf("%s\n", pwd);
 }
 
-// Version sans retour à la ligne pour l'utilisation avec pipes
-void ft_pwd_no_nl()
+void	ft_pwd_no_nl(void)
 {
-    char pwd[1024];
-    getcwd(pwd, sizeof(pwd));
-    printf("%s", pwd);
+	char	pwd[1024];
+
+	getcwd(pwd, sizeof(pwd));
+	printf("%s", pwd);
 }
 
-// int main() 
+// int main()
 // {
-//     ft_pwd();    
+//     ft_pwd();
 // }

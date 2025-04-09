@@ -11,7 +11,7 @@ LIBFT = $(LIBFT_PATH)/libft.a
 # Separate main.c from other source files to avoid duplicate compilation
 BUILTIN_SRCS = cd.c echo.c env.c exit.c pwd.c export.c unset.c \
                exec_external.c external_cmds.c path_utils.c redirection.c \
-			   exec_builtin.c pipes.c
+			   exec_builtin.c pipes.c heredoc_pipes.c heredoc.c
 BUILTIN_OBJS = $(BUILTIN_SRCS:.c=.o)
 
 INCLUDES = -I. -I$(LIBFT_PATH)

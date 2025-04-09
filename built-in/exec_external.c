@@ -12,9 +12,9 @@
 
 #include "minishell.h"
 
-void free_array(char **array)
+void	free_array(char **array)
 {
-    if (!array)
-        return;
-    free(array);
-} 
+	if (!array)
+		return ;
+	free(array);
+}

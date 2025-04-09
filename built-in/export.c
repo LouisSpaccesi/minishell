@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:10:52 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/26 15:57:00 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/09 16:09:56 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,27 +69,24 @@ static int replace_variable(char **env, char *var, char *new_entry)
     return (0);
 }
 
-static void new_variable(char ***env_ptr, char *new_entry, char *var)
+static int add_new_variable(char ***env_ptr, char *var, char *new_entry)
 {
     (void)var;
     int count;
-    char **new_env;
-    char **env;
     
-    env = *env_ptr;
     count = 0;
-    while (env[count])
-        count++;   
-    new_env = malloc((count + 2) * sizeof(char *));
-    if (!new_env)
+    while ((*env_ptr)[count])
+        count++;
+    *env_ptr = realloc(*env_ptr, (count + 2) * sizeof(char *));
+    if (!*env_ptr)
     {
         free(new_entry);
-        return;
+        return (0);
     }
-    copy_env(new_env, env, count);
-    new_env[count] = new_entry;
-    new_env[count + 1] = NULL;
-    *env_ptr = new_env;
+    (*env_ptr)[count] = new_entry;
+    (*env_ptr)[count + 1] = NULL;
+    
+    return (1);
 }
 
 void ft_export(char *rl, char ***env_ptr)
@@ -97,7 +94,7 @@ void ft_export(char *rl, char ***env_ptr)
     char *var;
     char *value;
     char *new_entry;
-    
+
     var = extract_variable_value(rl, &value);
     if (!var)
         return;
@@ -108,6 +105,12 @@ void ft_export(char *rl, char ***env_ptr)
         return;
     }
     if (!replace_variable(*env_ptr, var, new_entry))
-        new_variable(env_ptr, new_entry, var);
+    {
+        if (!add_new_variable(env_ptr, var, new_entry))
+        {
+            free(var);
+            return;
+        }
+    }
     free(var);
 }

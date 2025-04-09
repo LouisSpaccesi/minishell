@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-void ft_exit()
+void	ft_exit(void)
 {
 	exit(EXIT_SUCCESS);
 }
