@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 13:26:31 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 13:32:44 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/22 14:36:56 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,4 +50,18 @@ void	free_commands(char **cmd1, char **cmd2, char *temp_file)
 	}
 	free(cmd2);
 	unlink(temp_file);
+}
+
+int	wait_for_children(int pipe_count)
+{
+	int	i;
+	int	status;
+
+	i = 0;
+	while (i <= pipe_count)
+	{
+		waitpid(-1, &status, 0);
+		i++;
+	}
+	return (0);
 }

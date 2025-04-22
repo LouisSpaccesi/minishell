@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/09 13:50:08 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/22 14:31:57 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ int	main(int argc, char **argv, char **envp)
 		}
 		args = ft_split(rl, ' ');
 		if (args && args[0])
-			execute_command(args, shell->env);
+			execute_command_part1(args, shell->env);
 		free(rl);
 		if (args)
 		{

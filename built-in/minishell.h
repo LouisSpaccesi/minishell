@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 13:41:45 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/22 15:26:31 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,19 +92,10 @@ int			handle_redirection(char **args, int *saved_stdout);
 
 /* Fonctions spécifiques pour les cas complexes */
 int			execute_heredoc_pipe(char **args, char **env_copy);
-int			execute_heredoc_pipe_part2(char **args, int heredoc_idx,
-				int pipe_idx, char *temp_file);
-int			execute_heredoc_pipe_part3(char **args, int pipe_idx, int temp_fd,
-				char **cmd1, char *temp_file);
-int			execute_heredoc_pipe_part4(char **cmd1, char **cmd2, int temp_fd,
-				int *pipefd, char *temp_file);
-int			execute_heredoc_pipe_part5(pid_t pid1, pid_t pid2, int *pipefd,
-				char **cmd1, char **cmd2, int temp_fd, char *temp_file);
 
 /* Fonctions de gestion des pipes */
 int			count_pipes(char **args);
 char		***split_command_by_pipes(char **args);
-void		free_command_segments(char ***cmd_segments);
 int			execute_simple_command(char **args, char **env_copy);
 int			execute_piped_commands(char ***cmd_segments, char **env_copy);
 int			execute_piped_commands_part1(char ***cmd_segments, char **env_copy);
@@ -125,18 +116,29 @@ void		execute_first_command(char **cmd1, int temp_fd, int *pipefd);
 char		**create_command_array(char **args, int start, int end);
 int			execute_piped_commands_setup(char ***cmd_segments, char **env_copy,
 				int pipe_count, pid_t *pids);
+void free_command_segments(char ***cmd_segments, int count);
 
 char	**create_command_array(char **args, int start, int end);
 void	execute_first_command(char **cmd1, int temp_fd, int *pipefd);
 void	execute_second_command(char **cmd2, int *pipefd, int temp_fd);
 int	count_pipes(char **args);
-void	free_command_segments(char ***cmd_segments);
 int	wait_for_children(int pipe_count);
 int	execute_command_part1(char **args, char **env_copy);
 int	execute_command_part2(char **args, char **env_copy);
 int	execute_pipe_without_heredoc(char **args, char **env_copy);
 int	check_for_heredoc_pipe(char **args, int *has_heredoc, int *has_pipe);
-
+int	execute_piped_commands_part1(char ***cmd_segments, char **env_copy);
+int	init_command_pipes(int i, int pipe_count, int pipe_fds[2][2],
+	int current_pipe);
+int	execute_piped_commands_setup(char ***cmd_segments, char **env_copy,
+		int pipe_count, pid_t *pids);
+int	count_segment_size(char **args, int i);
+char	**create_segment(char **args, int *index, int seg_size);
+int	wait_for_children(int pipe_count);
+void	handle_parent_pipes(int i, int pipe_count, int pipe_fds[2][2],
+	int *current_pipe);
+void	setup_child_pipes(int i, int pipe_count, int pipe_fds[2][2],
+		int current_pipe);
 
 
 #endif
