@@ -6,27 +6,11 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 13:45:24 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/09 14:13:22 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/22 13:43:09 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-int	count_pipes(char **args)
-{
-	int	i;
-	int	count;
-
-	i = 0;
-	count = 0;
-	while (args[i])
-	{
-		if (ft_strncmp(args[i], "|", 2) == 0)
-			count++;
-		i++;
-	}
-	return (count);
-}
 
 static char	**create_segment(char **args, int *index, int seg_size)
 {
@@ -96,31 +80,6 @@ char	***split_command_by_pipes(char **args)
 	return (cmd_segments);
 }
 
-void	free_command_segments(char ***cmd_segments)
-{
-	int	i;
-	int	j;
-
-	i = 0;
-	while (cmd_segments[i])
-	{
-		j = 0;
-		while (cmd_segments[i][j])
-		{
-			free(cmd_segments[i][j]);
-			j++;
-		}
-		free(cmd_segments[i]);
-		i++;
-	}
-	free(cmd_segments);
-}
-
-int	execute_simple_command(char **args, char **env_copy)
-{
-	return (execute_command_with_redirection(args, env_copy));
-}
-
 static void	setup_child_pipes(int i, int pipe_count, int pipe_fds[2][2],
 		int current_pipe)
 {
@@ -159,7 +118,7 @@ int	execute_piped_commands_part1(char ***cmd_segments, char **env_copy)
 		i++;
 	pipe_count = i - 1;
 	if (pipe_count == 0)
-		return (execute_simple_command(cmd_segments[0], env_copy));
+		return (execute_command_with_redirection(cmd_segments[0], env_copy));
 	pids = malloc(sizeof(pid_t) * (pipe_count + 1));
 	if (!pids)
 		return (1);
@@ -173,20 +132,6 @@ int	execute_piped_commands_part1(char ***cmd_segments, char **env_copy)
 	result = wait_for_children(pipe_count);
 	free(pids);
 	return (result);
-}
-
-int	wait_for_children(int pipe_count)
-{
-	int	i;
-	int	status;
-
-	i = 0;
-	while (i <= pipe_count)
-	{
-		waitpid(-1, &status, 0);
-		i++;
-	}
-	return (0);
 }
 
 int	init_command_pipes(int i, int pipe_count, int pipe_fds[2][2],
@@ -219,7 +164,7 @@ int	execute_piped_commands_setup(char ***cmd_segments, char **env_copy,
 		if (pids[i] == 0)
 		{
 			setup_child_pipes(i, pipe_count, pipe_fds, current_pipe);
-			execute_simple_command(cmd_segments[i], env_copy);
+			execute_command_with_redirection(cmd_segments[i], env_copy);
 			exit(0);
 		}
 		else
@@ -229,12 +174,7 @@ int	execute_piped_commands_setup(char ***cmd_segments, char **env_copy,
 	return (0);
 }
 
-int	execute_piped_commands(char ***cmd_segments, char **env_copy)
-{
-	return (execute_piped_commands_part1(cmd_segments, env_copy));
-}
-
-static int	check_for_heredoc_pipe(char **args, int *has_heredoc, int *has_pipe)
+int	check_for_heredoc_pipe(char **args, int *has_heredoc, int *has_pipe)
 {
 	int	i;
 
@@ -252,7 +192,7 @@ static int	check_for_heredoc_pipe(char **args, int *has_heredoc, int *has_pipe)
 	return (0);
 }
 
-static int	execute_pipe_without_heredoc(char **args, char **env_copy)
+int	execute_pipe_without_heredoc(char **args, char **env_copy)
 {
 	char	***cmd_segments;
 	int		status;
@@ -260,32 +200,9 @@ static int	execute_pipe_without_heredoc(char **args, char **env_copy)
 	cmd_segments = split_command_by_pipes(args);
 	if (!cmd_segments)
 		return (1);
-	status = execute_piped_commands(cmd_segments, env_copy);
+	status = execute_piped_commands_part1(cmd_segments, env_copy);
 	free_command_segments(cmd_segments);
 	return (status);
-}
-
-int	execute_command_part1(char **args, char **env_copy)
-{
-	int	has_heredoc;
-	int	has_pipe;
-
-	check_for_heredoc_pipe(args, &has_heredoc, &has_pipe);
-	if (has_heredoc && has_pipe)
-		return (execute_heredoc_pipe(args, env_copy));
-	if (has_heredoc)
-		return (execute_command_with_redirection(args, env_copy));
-	return (execute_command_part2(args, env_copy));
-}
-
-int	execute_command_part2(char **args, char **env_copy)
-{
-	int	pipe_count;
-
-	pipe_count = count_pipes(args);
-	if (pipe_count == 0)
-		return (execute_simple_command(args, env_copy));
-	return (execute_pipe_without_heredoc(args, env_copy));
 }
 
 int	execute_command(char **args, char **env_copy)
