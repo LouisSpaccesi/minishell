@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:50:00 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/31 15:38:38 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/26 17:33:30 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,10 @@ char	*find_command_path(char *cmd, char **envp)
 
 static void	handle_exec_failure(char *cmd_path, char **cmd_args)
 {
-	perror("execve");
+	ft_putstr_fd("bash: ", 2);
+	ft_putstr_fd(cmd_path, 2);
+	ft_putstr_fd(": ", 2);
+	ft_putendl_fd(strerror(errno), 2);
 	if (cmd_args)
 		free(cmd_args);
 	if (cmd_path)

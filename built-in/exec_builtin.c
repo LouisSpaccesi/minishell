@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 15:31:59 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/09 14:58:33 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/26 17:13:39 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
 	}
 }
 
-void	handle_echo_cd(char **args)
+void	handle_echo_cd(char **args, char **envp)
 {
 	int	argc;
 		char cmd[1024];
@@ -36,7 +36,7 @@ void	handle_echo_cd(char **args)
 		argc = 0;
 		while (args[argc])
 			argc++;
-		ft_echo(argc, args);
+		ft_echo(argc, args, envp);
 	}
 	else if (ft_strncmp(args[0], "cd", 3) == 0)
 	{
@@ -71,7 +71,7 @@ void	handle_complex_builtins(char **args, char **env_copy)
 {
 	if (ft_strncmp(args[0], "echo", 5) == 0 || ft_strncmp(args[0], "cd",
 			3) == 0)
-		handle_echo_cd(args);
+		handle_echo_cd(args, env_copy);
 	else
 		handle_env_builtins(args, &env_copy);
 }

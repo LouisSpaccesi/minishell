@@ -6,7 +6,7 @@
 /*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 15:26:31 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/26 17:13:53 by lospacce         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,11 +62,10 @@ void	free_commands(char **cmd1, char **cmd2, char *temp_file);
 int			ft_strncmp(const char *s1, const char *s2, size_t n);
 void		ft_exit(void);
 void		ft_env(char **envp);
-int			ft_ls(int argc, char **argv, char **envp);
 void		ft_pwd(void);
 void		ft_pwd_no_nl(void);
 void		ft_cd(char *rl);
-int			ft_echo(int argc, char **argv);
+int ft_echo(int argc, char **argv, char **envp);
 void		ft_exit(void);
 void		ft_export(char *rl, char ***env_ptr);
 char		*create_env(const char *var, const char *value);
@@ -87,7 +86,7 @@ int			ft_strcmp(const char *s1, const char *s2);
 int			is_builtin(char *cmd);
 void		handle_complex_builtins(char **args, char **env_copy);
 void		handle_env_builtins(char **args, char ***env_copy);
-void		handle_echo_cd(char **args);
+void	handle_echo_cd(char **args, char **envp);
 int			handle_redirection(char **args, int *saved_stdout);
 
 /* Fonctions spécifiques pour les cas complexes */
