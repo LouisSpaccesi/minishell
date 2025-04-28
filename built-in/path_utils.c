@@ -3,143 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   path_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:50:00 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/26 17:33:30 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/28 18:29:47 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-char	*get_path_env(char **envp)
-{
-	int	i;
-
-	i = 0;
-	while (envp[i])
-	{
-		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
-			return (envp[i] + 5);
-		i++;
-	}
-	return (NULL);
-}
-
-static char	*build_full_path(char *path, char *cmd)
-{
-	char	*temp;
-	char	*full_path;
-
-	temp = ft_strjoin(path, "/");
-	if (!temp)
-		return (NULL);
-	full_path = ft_strjoin(temp, cmd);
-	free(temp);
-	return (full_path);
-}
-
-static char	*search_in_paths(char **paths, char *cmd)
-{
-	char	*full_path;
-	int		i;
-
-	i = 0;
-	while (paths[i])
-	{
-		full_path = build_full_path(paths[i], cmd);
-		if (!full_path)
-			continue ;
-		if (access(full_path, X_OK) == 0)
-			return (full_path);
-		free(full_path);
-		i++;
-	}
-	return (NULL);
-}
-
-static void	free_paths_array(char **paths)
-{
-	int	i;
-
-	i = 0;
-	while (paths[i])
-		free(paths[i++]);
-	free(paths);
-}
-
-char	*find_command_path(char *cmd, char **envp)
-{
-	char	*path_env;
-	char	**paths;
-	char	*full_path;
-
-	if (cmd[0] == '/' || cmd[0] == '.')
-		return (ft_strdup(cmd));
-	path_env = get_path_env(envp);
-	if (!path_env)
-		return (NULL);
-	paths = ft_split(path_env, ':');
-	if (!paths)
-		return (NULL);
-	full_path = search_in_paths(paths, cmd);
-	free_paths_array(paths);
-	return (full_path);
-}
-
-static void	handle_exec_failure(char *cmd_path, char **cmd_args)
-{
-	ft_putstr_fd("bash: ", 2);
-	ft_putstr_fd(cmd_path, 2);
-	ft_putstr_fd(": ", 2);
-	ft_putendl_fd(strerror(errno), 2);
-	if (cmd_args)
-		free(cmd_args);
-	if (cmd_path)
-		free(cmd_path);
-	exit(EXIT_FAILURE);
-}
-
-static void	exec_cmd_child(char *cmd_path, char **args, char **envp,
-		int arg_count)
-{
-	char	**cmd_args;
-	int		i;
-
-	i = 0;
-	cmd_args = malloc((arg_count + 1) * sizeof(char *));
-	if (!cmd_args)
-	{
-		perror("malloc");
-		free(cmd_path);
-		exit(EXIT_FAILURE);
-	}
-	while (i < arg_count)
-	{
-		cmd_args[i] = args[i];
-		i++;
-	}
-	cmd_args[i] = NULL;
-	execve(cmd_path, cmd_args, envp);
-	handle_exec_failure(cmd_path, cmd_args);
-}
-
-static int	handle_command_not_found(char *cmd)
-{
-	ft_putstr_fd("Command not found: ", 2);
-	ft_putendl_fd(cmd, 2);
-	return (0);
-}
-
-static int	count_cmd_args(char **args)
-{
-	int	i;
-
-	i = 0;
-	while (args && args[i])
-		i++;
-	return (i);
-}
 
 int	handle_child_process(char *cmd_path, char **args, char **envp,
 		int arg_count)

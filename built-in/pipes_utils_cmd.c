@@ -41,7 +41,7 @@ int	count_segment_size(char **args, int i)
 	while (args[i + k] && ft_strncmp(args[i + k], "|", 2) != 0)
 	{
 		if (args[i + k] && ft_strncmp(args[i + k], "<<", 3) == 0 && args[i + k
-			+ 1])
+				+ 1])
 			k += 2;
 		else
 			k++;

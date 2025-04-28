@@ -52,11 +52,11 @@ int	execute_command_part2(char **args, char **env_copy)
 }
 
 void	handle_parent_pipes(int i, int pipe_count, int pipe_fds[2][2],
-	int *current_pipe)
+		int *current_pipe)
 {
-if (i > 0)
-	close(pipe_fds[1 - *current_pipe][0]);
-if (i < pipe_count)
-	close(pipe_fds[*current_pipe][1]);
-*current_pipe = 1 - *current_pipe;
+	if (i > 0)
+		close(pipe_fds[1 - *current_pipe][0]);
+	if (i < pipe_count)
+		close(pipe_fds[*current_pipe][1]);
+	*current_pipe = 1 - *current_pipe;
 }

@@ -3,22 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 14:31:57 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/28 12:56:06 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-int	is_builtin(char *cmd)
-{
-	return (ft_strncmp(cmd, "cd", 3) == 0 || ft_strncmp(cmd, "echo", 5) == 0
-		|| ft_strncmp(cmd, "pwd", 4) == 0 || ft_strncmp(cmd, "export", 7) == 0
-		|| ft_strncmp(cmd, "unset", 6) == 0 || ft_strncmp(cmd, "env", 4) == 0
-		|| ft_strncmp(cmd, "exit", 5) == 0);
-}
 
 char	**copy_all_env(char **envp)
 {
@@ -63,85 +55,66 @@ void	free_env(char **env)
 	free(env);
 }
 
-t_shell	*init_shell(char **envp)
+static char	*read_command_line(t_shell *shell, char ***args)
 {
-	t_shell	*shell;
+	char	*rl;
 
-	shell = malloc(sizeof(t_shell));
-	if (!shell)
-		return (NULL);
-	shell->env = copy_all_env(envp);
-	if (!shell->env)
+	dup2(shell->original_stdin, STDIN_FILENO);
+	rl = readline("minishell > ");
+	if (!rl)
 	{
-		free(shell);
+		printf("exit\n");
 		return (NULL);
 	}
-	shell->exit_status = 0;
-	shell->saved_stdout = -1;
-	shell->saved_stdin = -1;
-	shell->original_stdin = dup(STDIN_FILENO);
-	if (shell->original_stdin == -1)
+	add_history(rl);
+	if (ft_strncmp(rl, "exit", 4) == 0)
 	{
-		free_env(shell->env);
-		free(shell);
+		free(rl);
 		return (NULL);
 	}
-	return (shell);
+	*args = ft_split(rl, ' ');
+	return (rl);
 }
 
-void	free_shell(t_shell *shell)
+int	process_command(t_shell *shell)
 {
-	if (!shell)
-		return ;
-	free_env(shell->env);
-	if (shell->original_stdin != -1)
-		close(shell->original_stdin);
-	free(shell);
+	char	*rl;
+	char	**args;
+	int		i;
+
+	args = NULL;
+	rl = read_command_line(shell, &args);
+	if (!rl)
+		return (0);
+	if (args && args[0])
+		execute_command_part1(args, shell->env);
+	free(rl);
+	if (args)
+	{
+		i = 0;
+		while (args[i])
+		{
+			free(args[i]);
+			i++;
+		}
+		free(args);
+	}
+	return (1);
 }
 
 int	main(int argc, char **argv, char **envp)
 {
-	char	*rl;
-	char	**args;
-	t_shell	*shell;
-	int		i;
+	t_shell		*shell;
 
 	(void)argc;
 	(void)argv;
 	shell = init_shell(envp);
 	if (!shell)
-	{
 		return (EXIT_FAILURE);
-	}
 	while (1)
 	{
-		dup2(shell->original_stdin, STDIN_FILENO);
-		rl = readline("minishell > ");
-		if (!rl)
-		{
-			printf("exit\n");
+		if (!process_command(shell))
 			break ;
-		}
-		add_history(rl);
-		if (ft_strncmp(rl, "exit", 4) == 0)
-		{
-			free(rl);
-			break ;
-		}
-		args = ft_split(rl, ' ');
-		if (args && args[0])
-			execute_command_part1(args, shell->env);
-		free(rl);
-		if (args)
-		{
-			i = 0;
-			while (args[i])
-			{
-				free(args[i]);
-				i++;
-			}
-			free(args);
-		}
 	}
 	free_shell(shell);
 	return (EXIT_SUCCESS);

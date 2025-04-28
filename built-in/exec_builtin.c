@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_builtin.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 15:31:59 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/26 17:13:39 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/28 12:33:51 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 void	handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
 {
+	t_shell	shell;
+
 	if (ft_strncmp(args[0], "env", 4) == 0)
 		ft_env(env_copy);
 	else if (ft_strncmp(args[0], "pwd", 4) == 0)
@@ -22,14 +24,16 @@ void	handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
 	{
 		if (saved_stdout != -1)
 			ft_restore_output(saved_stdout);
-		ft_exit();
+		shell.env = env_copy;
+		shell.exit_status = 0;
+		ft_exit(args, &shell);
 	}
 }
 
 void	handle_echo_cd(char **args, char **envp)
 {
-	int	argc;
-		char cmd[1024];
+	int		argc;
+	char	cmd[1024];
 
 	if (ft_strncmp(args[0], "echo", 5) == 0)
 	{
@@ -49,7 +53,7 @@ void	handle_echo_cd(char **args, char **envp)
 
 void	handle_env_builtins(char **args, char ***env_copy)
 {
-	char cmd[1024];
+	char	cmd[1024];
 
 	if (ft_strncmp(args[0], "export", 7) == 0)
 	{

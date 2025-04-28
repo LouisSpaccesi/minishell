@@ -3,75 +3,61 @@
 /*                                                        :::      ::::::::   */
 /*   pipes.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/05 13:45:24 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 15:26:31 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/28 18:37:19 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char **create_command_segment(char **args, int *start_idx, int seg_size)
+char	**create_command_segment(char **args, int *start_idx, int seg_size)
 {
-    char **segment;
-    int i;
+	char	**segment;
+	int		i;
 
-    segment = (char **)malloc(sizeof(char *) * (seg_size + 1));
-    if (!segment)
-        return (NULL);
-    
-    i = 0;
-    while (i < seg_size)
-    {
-        segment[i] = args[*start_idx];
-        (*start_idx)++;
-        i++;
-    }
-    segment[i] = NULL;
-    return (segment);
+	segment = (char **)malloc(sizeof(char *) * (seg_size + 1));
+	if (!segment)
+		return (NULL);
+	i = 0;
+	while (i < seg_size)
+	{
+		segment[i] = args[*start_idx];
+		(*start_idx)++;
+		i++;
+	}
+	segment[i] = NULL;
+	return (segment);
 }
 
-void free_command_segments(char ***cmd_segments, int count)
+char	***split_command_by_pipes(char **args)
 {
-    int j;
+	int		i;
+	int		j;
+	int		pipe_count;
+	int		seg_size;
+	char	***cmd_segments;
 
-    j = 0;
-    while (j < count)
-    {
-        free(cmd_segments[j]);
-        j++;
-    }
-    free(cmd_segments);
-}
-
-char ***split_command_by_pipes(char **args)
-{
-    int     i;
-    int     j;
-    int     pipe_count;
-    int     seg_size;
-    char    ***cmd_segments;
-
-    pipe_count = count_pipes(args);
-    cmd_segments = (char ***)malloc(sizeof(char **) * (pipe_count + 2));
-    if (!cmd_segments)
-        return (NULL);
-    i = 0;
-    j = 0;
-    while (j <= pipe_count)
-    {
-        seg_size = count_segment_size(args, i);
-        cmd_segments[j] = create_command_segment(args, &i, seg_size);
-        if (!cmd_segments[j])
-        {
-            free_command_segments(cmd_segments, j);
-            return (NULL);
-        }
-        j++;
-    }
-    cmd_segments[j] = NULL;
-    return (cmd_segments);
+	pipe_count = count_pipes(args);
+	cmd_segments = (char ***)malloc(sizeof(char **) * (pipe_count + 2));
+	if (!cmd_segments)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (j <= pipe_count)
+	{
+		seg_size = count_segment_size(args, i);
+		cmd_segments[j] = create_command_segment(args, &i, seg_size);
+		if (!cmd_segments[j])
+		{
+			free_command_segments(cmd_segments, j);
+			return (NULL);
+		}
+		j++;
+	}
+	cmd_segments[j] = NULL;
+	return (cmd_segments);
 }
 
 void	setup_child_pipes(int i, int pipe_count, int pipe_fds[2][2],
@@ -120,7 +106,7 @@ int	execute_pipe_without_heredoc(char **args, char **env_copy)
 	status = execute_piped_commands_part1(cmd_segments, env_copy);
 	pipe_count = 0;
 	while (cmd_segments[pipe_count])
-		pipe_count++;	
+		pipe_count++;
 	free_command_segments(cmd_segments, pipe_count);
 	return (status);
 }

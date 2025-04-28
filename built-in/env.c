@@ -51,20 +51,21 @@ void	copy_env(char **new_env, char **env, int count)
 	}
 }
 
-void ft_env(char **envp)
+void	ft_env(char **envp)
 {
-    int i;
+	int	i;
 
-    if (!envp)
-        return;
-    i = 0;
-    while (envp[i])
-    {
-        if (envp[i] && ft_strchr(envp[i], '=') && ft_strlen(ft_strchr(envp[i], '=') + 1) > 0)
-        {
-            write(STDOUT_FILENO, envp[i], ft_strlen(envp[i]));
-            write(STDOUT_FILENO, "\n", 1);
-        }
-        i++;
-    }
+	if (!envp)
+		return ;
+	i = 0;
+	while (envp[i])
+	{
+		if (envp[i] && ft_strchr(envp[i], '=') && ft_strlen(ft_strchr(envp[i],
+					'=') + 1) > 0)
+		{
+			write(STDOUT_FILENO, envp[i], ft_strlen(envp[i]));
+			write(STDOUT_FILENO, "\n", 1);
+		}
+		i++;
+	}
 }

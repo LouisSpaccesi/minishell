@@ -12,37 +12,37 @@
 
 #include "minishell.h"
 
-static int get_redirection_type(char *arg)
+static int	get_redirection_type(char *arg)
 {
-    if (ft_strncmp(arg, ">", 2) == 0)
-        return (1);
-    else if (ft_strncmp(arg, ">>", 3) == 0)
-        return (2);
-    else if (ft_strncmp(arg, "<<", 3) == 0)
-        return (3);
-    return (0);
+	if (ft_strncmp(arg, ">", 2) == 0)
+		return (1);
+	else if (ft_strncmp(arg, ">>", 3) == 0)
+		return (2);
+	else if (ft_strncmp(arg, "<<", 3) == 0)
+		return (3);
+	return (0);
 }
 
-int find_last_redirection(char **args, int *redirection_type)
+int	find_last_redirection(char **args, int *redirection_type)
 {
-    int i;
-    int last_redir;
-    int current_type;
+	int	i;
+	int	last_redir;
+	int	current_type;
 
-    i = 0;
-    last_redir = -1;
-    *redirection_type = 0;
-    while (args[i])
-    {
-        current_type = get_redirection_type(args[i]);
-        if (current_type != 0)
-        {
-            last_redir = i;
-            *redirection_type = current_type;
-        }
-        i++;
-    }
-    return (last_redir);
+	i = 0;
+	last_redir = -1;
+	*redirection_type = 0;
+	while (args[i])
+	{
+		current_type = get_redirection_type(args[i]);
+		if (current_type != 0)
+		{
+			last_redir = i;
+			*redirection_type = current_type;
+		}
+		i++;
+	}
+	return (last_redir);
 }
 
 int	prepare_redirection(char **args, int *redir_idx, int *redir_type)
@@ -89,5 +89,3 @@ int	handle_redirection(char **args, int *saved_stdout)
 	}
 	return (0);
 }
-
-
