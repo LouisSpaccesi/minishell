@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:10:52 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/26 18:01:24 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/30 18:31:59 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,67 +49,93 @@ static char	*extract_variable_value(char *rl, char **value_ptr)
 	return (var);
 }
 
-static int	replace_variable(char **env, char *var, char *new_entry)
+static int replace_variable(char **env, char *var, char *new_entry)
 {
-	int	i;
-	int	var_len;
-
-	i = 0;
-	var_len = ft_strlen(var);
-	while (env[i])
-	{
-		if (ft_strncmp(env[i], var, var_len) == 0 && env[i][var_len] == '=')
-		{
-			free(env[i]);
-			env[i] = new_entry;
-			return (1);
-		}
-		i++;
-	}
-	return (0);
+    int i;
+    int var_len;
+    
+    i = 0;
+    var_len = ft_strlen(var);
+    while (env[i])
+    {
+        if (ft_strncmp(env[i], var, var_len) == 0 && env[i][var_len] == '=')
+        {
+            free(env[i]);
+            env[i] = new_entry;
+            return (1);
+        }
+        i++;
+    }
+    return (0);
 }
 
-static int	add_new_variable(char ***env_ptr, char *var, char *new_entry)
+static int add_new_variable(char ***env_ptr, char *var, char *new_entry)
 {
-	int	count;
-
-	(void)var;
-	count = 0;
-	while ((*env_ptr)[count])
-		count++;
-	*env_ptr = realloc(*env_ptr, (count + 2) * sizeof(char *));
-	if (!*env_ptr)
-	{
-		free(new_entry);
-		return (0);
-	}
-	(*env_ptr)[count] = new_entry;
-	(*env_ptr)[count + 1] = NULL;
-	return (1);
+    int count = 0;
+    char **new_env;
+    int i;
+    
+    (void)var;
+    
+    // Compter les variables
+    while ((*env_ptr)[count])
+        count++;
+    
+    // Allouer un tableau plus grand
+    new_env = malloc((count + 2) * sizeof(char *));
+    if (!new_env)
+    {
+        free(new_entry);
+        return (0);
+    }
+    
+    // Copier les pointeurs existants
+    i = 0;
+    while (i < count)
+    {
+        new_env[i] = (*env_ptr)[i];
+        i++;
+    }
+    
+    // Ajouter la nouvelle entrée
+    new_env[count] = new_entry;
+    new_env[count + 1] = NULL;
+    
+    // Libérer seulement le tableau
+    free(*env_ptr);
+    
+    // Mettre à jour le pointeur
+    *env_ptr = new_env;
+    
+    return (1);
 }
 
-void	ft_export(char *rl, char ***env_ptr)
+void ft_export(char *rl, char ***env_ptr)
 {
-	char	*var;
-	char	*value;
-	char	*new_entry;
-
-	var = extract_variable_value(rl, &value);
-	if (!var)
-		return ;
-	new_entry = create_env(var, value);
-	if (!new_entry)
-	{
-		free(var);
-		return ;
-	}
-	if (!replace_variable(*env_ptr, var, new_entry))
-	{
-		if (!add_new_variable(env_ptr, var, new_entry))
-		{
-			free(var);
-			return ;
-		}
-	}
-	free(var);
+    char *var;
+    char *value;
+    char *new_entry;
+    
+    var = extract_variable_value(rl, &value);
+    if (!var)
+        return;
+    
+    new_entry = create_env(var, value);
+    if (!new_entry)
+    {
+        free(var);
+        return;
+    }
+    
+    if (!replace_variable(*env_ptr, var, new_entry))
+    {
+        if (!add_new_variable(env_ptr, var, new_entry))
+        {
+            free(var);
+            free(new_entry);
+            return;
+        }
+    }
+    
+    free(var);
 }

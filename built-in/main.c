@@ -61,7 +61,7 @@ static char	*read_command_line(t_shell *shell, char ***args)
 
 	dup2(shell->original_stdin, STDIN_FILENO);
 	rl = readline("minishell > ");
-	if (is_eof(rl)) 
+	if (is_eof(rl))
 	{
 		write(STDOUT_FILENO, "exit\n", 5);
 		return (NULL);
@@ -108,11 +108,10 @@ int	process_command(t_shell *shell)
 
 int	main(int argc, char **argv, char **envp)
 {
-	t_shell		*shell;
+	t_shell	*shell;
 
 	(void)argc;
 	(void)argv;
-	
 	setup_signals();
 	shell = init_shell(envp);
 	if (!shell)
@@ -123,7 +122,7 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		if (!process_command(shell))
-			break;
+			break ;
 	}
 	restore_terminal();
 	free_shell(shell);

@@ -6,7 +6,7 @@
 /*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/29 17:17:35 by louis            ###   ########.fr       */
+/*   Updated: 2025/04/30 18:30:05 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,12 @@ typedef struct s_command
 	int		is_piped;
 }			t_command;
 
+typedef struct s_env_var {
+    char *name;
+    char *value;
+    struct s_env_var *next;
+} 				t_env_var;
+
 typedef struct s_shell
 {
 	char	**env;
@@ -45,6 +51,7 @@ typedef struct s_shell
 	int		saved_stdout;
 	int		saved_stdin;
 	int		original_stdin;
+	t_env_var *custom_env;
 }			t_shell;
 
 typedef struct s_hd_pipe
@@ -62,7 +69,7 @@ void		close_and_free(int *pipefd, char **cmd1, char **cmd2, int temp_fd);
 int			count_args(char **args, int start);
 void		free_commands(char **cmd1, char **cmd2, char *temp_file);
 int			ft_strncmp(const char *s1, const char *s2, size_t n);
-void		ft_env(char **envp);
+void ft_env(t_shell *shell);
 void		ft_pwd(void);
 void		ft_pwd_no_nl(void);
 void		ft_cd(char *rl);
@@ -172,6 +179,8 @@ void	setup_signals(void);
 void	setup_exec_signals(void);
 void	restore_terminal(void);
 int	is_eof(char *line);
+char **copy_env_safe(char **env);
+
 
 
 #endif

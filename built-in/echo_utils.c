@@ -14,8 +14,8 @@
 
 void	print_echo_arg(char *arg, char **envp)
 {
-	int			len;
-	char		temp[1024];
+	int		len;
+	char	temp[1024];
 
 	len = ft_strlen(arg);
 	if (len >= 2 && arg[0] == '\'' && arg[len - 1] == '\'')

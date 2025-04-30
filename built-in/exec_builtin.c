@@ -6,28 +6,36 @@
 /*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/04 15:31:59 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/29 17:04:16 by louis            ###   ########.fr       */
+/*   Updated: 2025/04/30 18:34:04 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
+void handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
 {
-	t_shell	shell;
+    t_shell shell;
 
-	if (ft_strncmp(args[0], "env", 4) == 0)
-		ft_env(env_copy);
-	else if (ft_strncmp(args[0], "pwd", 4) == 0)
-		ft_pwd();
-	else if (ft_strncmp(args[0], "exit", 5) == 0)
-	{
-		if (saved_stdout != -1)
-			ft_restore_output(saved_stdout);
-		shell.env = env_copy;
-		shell.exit_status = 0;
-		ft_exit(args, &shell);
-	}
+    if (ft_strncmp(args[0], "env", 4) == 0)
+    {
+        shell.env = env_copy;
+        shell.exit_status = 0;
+        shell.saved_stdout = saved_stdout;
+        shell.saved_stdin = -1;
+        shell.original_stdin = -1;
+        shell.custom_env = NULL; 
+        ft_env(&shell);
+    }
+    else if (ft_strncmp(args[0], "pwd", 4) == 0)
+        ft_pwd();
+    else if (ft_strncmp(args[0], "exit", 5) == 0)
+    {
+        if (saved_stdout != -1)
+            ft_restore_output(saved_stdout);
+        shell.env = env_copy;
+        shell.exit_status = 0;
+        ft_exit(args, &shell);
+    }
 }
 
 void	handle_echo_cd(char **args, char **envp)
@@ -80,29 +88,41 @@ void	handle_complex_builtins(char **args, char **env_copy)
 		handle_env_builtins(args, &env_copy);
 }
 
-int	execute_command_with_redirection(char **args, char **env_copy)
+static int handle_command_execution(t_command *cmd, char **args, char **env_copy, int saved_stdout)
 {
-	t_command	cmd;
-	int			saved_stdout;
+    if (cmd->is_builtin)
+    {
+        if (ft_strncmp(args[0], "env", 4) == 0 || ft_strncmp(args[0], "pwd", 
+                4) == 0 || ft_strncmp(args[0], "exit", 5) == 0)
+            handle_simple_builtins(args, env_copy, saved_stdout);
+        else
+            handle_complex_builtins(args, env_copy);
+    }
+    else
+        parse_args(args, env_copy);
+    
+    if (saved_stdout != -1)
+        ft_restore_output(saved_stdout);
+    return (0);
+}
 
-	cmd.args = args;
-	cmd.is_builtin = is_builtin(args[0]);
-	cmd.redirection = 0;
-	cmd.redir_file = NULL;
-	saved_stdout = -1;
-	if (handle_redirection(args, &saved_stdout) != 0)
-		return (1);
-	if (cmd.is_builtin)
-	{
-		if (ft_strncmp(args[0], "env", 4) == 0 || ft_strncmp(args[0], "pwd",
-				4) == 0 || ft_strncmp(args[0], "exit", 5) == 0)
-			handle_simple_builtins(args, env_copy, saved_stdout);
-		else
-			handle_complex_builtins(args, env_copy);
-	}
-	else
-		parse_args(args, env_copy);
-	if (saved_stdout != -1)
-		ft_restore_output(saved_stdout);
-	return (0);
+int execute_command_with_redirection(char **args, char **env_copy)
+{
+    t_command cmd;
+    int saved_stdout;
+    int i = 0;
+    
+    cmd.args = args;
+    cmd.is_builtin = is_builtin(args[0]);
+    cmd.redirection = 0;
+    cmd.redir_file = NULL;
+    saved_stdout = -1;
+    
+    while (args[i])
+        i++;
+    
+    if (handle_redirection(args, &saved_stdout) != 0)
+        return (1);
+    
+    return (handle_command_execution(&cmd, args, env_copy, saved_stdout));
 }

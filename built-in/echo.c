@@ -45,7 +45,7 @@ void	print_env_var(char *var_name, char **envp)
 static int	is_n_option(char *arg)
 {
 	int	i;
-	
+
 	if (!arg || arg[0] != '-' || arg[1] != 'n')
 		return (0);
 	i = 2;
@@ -60,8 +60,8 @@ static int	is_n_option(char *arg)
 
 int	ft_echo(int argc, char **argv, char **envp)
 {
-	int	i;
-	int	no_newline;
+	int i;
+	int no_newline;
 
 	i = 1;
 	no_newline = 0;

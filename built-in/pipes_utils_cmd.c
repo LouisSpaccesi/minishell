@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipes_utils_cmd.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 14:32:52 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 15:25:50 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/04/30 18:08:04 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,13 @@ char	**create_segment(char **args, int *index, int seg_size)
 	if (!segment)
 		return (NULL);
 	k = 0;
-	while (args[*index] && ft_strncmp(args[*index], "|", 2) != 0)
+	while (k < seg_size)
 	{
 		segment[k] = ft_strdup(args[*index]);
 		(*index)++;
 		k++;
 	}
 	segment[k] = NULL;
-	if (args[*index])
-		(*index)++;
 	return (segment);
 }
 
@@ -41,7 +39,7 @@ int	count_segment_size(char **args, int i)
 	while (args[i + k] && ft_strncmp(args[i + k], "|", 2) != 0)
 	{
 		if (args[i + k] && ft_strncmp(args[i + k], "<<", 3) == 0 && args[i + k
-				+ 1])
+			+ 1])
 			k += 2;
 		else
 			k++;
