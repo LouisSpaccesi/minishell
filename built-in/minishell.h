@@ -6,7 +6,7 @@
 /*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 16:21:42 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/28 18:34:03 by louis            ###   ########.fr       */
+/*   Updated: 2025/04/29 17:17:35 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <unistd.h>
+#include <signal.h>
+#include <termios.h>
 
 typedef struct s_command
 {
@@ -164,5 +166,12 @@ void		exec_cmd_child(char *cmd_path, char **args, char **envp,
 				int arg_count);
 int			handle_command_not_found(char *cmd);
 int			count_cmd_args(char **args);
+
+void	handle_sigint(int sig);
+void	setup_signals(void);
+void	setup_exec_signals(void);
+void	restore_terminal(void);
+int	is_eof(char *line);
+
 
 #endif

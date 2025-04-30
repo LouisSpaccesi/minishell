@@ -6,7 +6,7 @@
 /*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 15:04:38 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/28 12:06:35 by louis            ###   ########.fr       */
+/*   Updated: 2025/04/29 17:04:10 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,28 +42,20 @@ void	print_env_var(char *var_name, char **envp)
 	}
 }
 
-static int	check_no_newline(int argc, char **argv, int *i)
+static int	is_n_option(char *arg)
 {
-	int	no_newline;
-
-	no_newline = 0;
-	if (*i < argc && ft_strncmp(argv[*i], "-n", 3) == 0)
+	int	i;
+	
+	if (!arg || arg[0] != '-' || arg[1] != 'n')
+		return (0);
+	i = 2;
+	while (arg[i])
 	{
-		no_newline = 1;
-		(*i)++;
-	}
-	return (no_newline);
-}
-
-static void	print_echo_args(int argc, char **argv, int i, char **envp)
-{
-	while (i < argc)
-	{
-		print_echo_arg(argv[i], envp);
-		if (i + 1 < argc)
-			printf(" ");
+		if (arg[i] != 'n')
+			return (0);
 		i++;
 	}
+	return (1);
 }
 
 int	ft_echo(int argc, char **argv, char **envp)
@@ -72,8 +64,19 @@ int	ft_echo(int argc, char **argv, char **envp)
 	int	no_newline;
 
 	i = 1;
-	no_newline = check_no_newline(argc, argv, &i);
-	print_echo_args(argc, argv, i, envp);
+	no_newline = 0;
+	while (i < argc && is_n_option(argv[i]))
+	{
+		no_newline = 1;
+		i++;
+	}
+	while (i < argc)
+	{
+		print_echo_arg(argv[i], envp);
+		if (i + 1 < argc)
+			printf(" ");
+		i++;
+	}
 	if (!no_newline)
 		printf("\n");
 	return (0);

@@ -6,7 +6,7 @@
 /*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/28 12:56:06 by louis            ###   ########.fr       */
+/*   Updated: 2025/04/29 17:16:14 by louis            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,9 +61,9 @@ static char	*read_command_line(t_shell *shell, char ***args)
 
 	dup2(shell->original_stdin, STDIN_FILENO);
 	rl = readline("minishell > ");
-	if (!rl)
+	if (is_eof(rl)) 
 	{
-		printf("exit\n");
+		write(STDOUT_FILENO, "exit\n", 5);
 		return (NULL);
 	}
 	add_history(rl);
@@ -87,7 +87,11 @@ int	process_command(t_shell *shell)
 	if (!rl)
 		return (0);
 	if (args && args[0])
+	{
+		setup_exec_signals();
 		execute_command_part1(args, shell->env);
+		setup_signals();
+	}
 	free(rl);
 	if (args)
 	{
@@ -108,14 +112,20 @@ int	main(int argc, char **argv, char **envp)
 
 	(void)argc;
 	(void)argv;
+	
+	setup_signals();
 	shell = init_shell(envp);
 	if (!shell)
+	{
+		restore_terminal();
 		return (EXIT_FAILURE);
+	}
 	while (1)
 	{
 		if (!process_command(shell))
-			break ;
+			break;
 	}
+	restore_terminal();
 	free_shell(shell);
 	return (EXIT_SUCCESS);
 }
