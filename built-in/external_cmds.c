@@ -1,4 +1,6 @@
 #include "minishell.h"
+#include <string.h> // For strerror
+#include <errno.h>  // For errno
 
 int	parse_args(char **args, char **envp)
 {
@@ -27,7 +29,8 @@ t_shell *init_shell(char **envp)
     shell->original_stdin = dup(STDIN_FILENO);
     if (shell->original_stdin == -1)
     {
-        perror("minishell: dup failed");
+        ft_putstr_fd("minishell: dup failed: ", 2);
+        ft_putendl_fd(strerror(errno), 2);
         free_env(shell->env);
         free(shell);
         return (NULL);
@@ -56,29 +59,21 @@ static void	child_process_exec(char *cmd_path, char **args, t_shell *shell,
 		if (apply_redirection(redir_info) == -1)
 		{
 			free(cmd_path);
-			perror("minishell: redirection failed");
+            ft_putstr_fd("minishell: redirection failed: ", 2);
+            ft_putendl_fd(strerror(errno), 2);
 			exit(EXIT_FAILURE);
 		}
 	}
 	if (execve(cmd_path, args, shell->env) == -1)
 	{
-		perror("minishell");
+        ft_putstr_fd("minishell: ", 2);
+        ft_putstr_fd(args[0], 2);
+        ft_putstr_fd(": ", 2);
+        ft_putendl_fd(strerror(errno), 2);
 		free(cmd_path);
 		exit(126);
 	}
 	exit(EXIT_FAILURE);
-}
-
-static int	parent_process_wait(pid_t pid)
-{
-	int	status;
-
-	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	else if (WIFSIGNALED(status))
-		return (128 + WTERMSIG(status));
-	return (EXIT_FAILURE);
 }
 
 int	execute_external_command(char **args, t_shell *shell,
@@ -99,13 +94,20 @@ int	execute_external_command(char **args, t_shell *shell,
 	pid = fork();
 	if (pid == -1)
 	{
-		perror("minishell: fork failed");
+        ft_putstr_fd("minishell: fork failed: ", 2);
+        ft_putendl_fd(strerror(errno), 2);
 		free(cmd_path);
 		return (EXIT_FAILURE);
 	}
 	else if (pid == 0)
 		child_process_exec(cmd_path, args, shell, redir_info);
 	free(cmd_path);
-	status = parent_process_wait(pid);
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		status = 128 + WTERMSIG(status);
+	else
+		status = EXIT_FAILURE;
 	return (status);
 }

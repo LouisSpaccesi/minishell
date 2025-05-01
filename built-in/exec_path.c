@@ -1,4 +1,7 @@
 #include "minishell.h"
+#include <string.h> // For strerror
+#include <errno.h>  // For errno
+#include <sys/stat.h> // For stat
 
 static int	print_exec_error(char *cmd_path)
 {
@@ -47,7 +50,7 @@ void	exec_cmd_child(char *cmd_path, char **args, char **envp, int arg_count)
 	cmd_args = malloc((arg_count + 1) * sizeof(char *));
 	if (!cmd_args)
 	{
-		perror("malloc");
+		ft_putstr_fd("minishell: malloc failed\n", 2);
 		free(cmd_path);
 		exit(EXIT_FAILURE);
 	}

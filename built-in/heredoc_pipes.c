@@ -22,7 +22,7 @@ void	close_pipe(t_hd_pipe *hp)
 	unlink(hp->temp_file);
 }
 
-int	execute_commands(t_hd_pipe *hp)
+int	execute_commands(t_hd_pipe *hp, t_shell *shell)
 {
 	hp->pid1 = fork();
 	if (hp->pid1 == -1)
@@ -31,7 +31,7 @@ int	execute_commands(t_hd_pipe *hp)
 		return (1);
 	}
 	if (hp->pid1 == 0)
-		execute_first_command(hp->cmd1, hp->temp_fd, hp->pipefd);
+		execute_first_command(hp->cmd1, hp->temp_fd, hp->pipefd, shell);
 	hp->pid2 = fork();
 	if (hp->pid2 == -1)
 	{
@@ -45,7 +45,7 @@ int	execute_commands(t_hd_pipe *hp)
 		return (1);
 	}
 	if (hp->pid2 == 0)
-		execute_second_command(hp->cmd2, hp->pipefd, hp->temp_fd);
+		execute_second_command(hp->cmd2, hp->pipefd, hp->temp_fd, shell);
 	return (0);
 }
 
@@ -70,13 +70,12 @@ int	execute_heredoc_pipe(char **args, t_shell *shell)
 	int			pipe_idx;
 	t_hd_pipe	hp;
 
-	(void)shell;
 	find_special_tokens(args, &heredoc_idx, &pipe_idx);
 	if (init_heredoc_pipe(&hp, args, heredoc_idx, pipe_idx) != 0)
 		return (1);
 	if (setup_second_command(&hp, args, pipe_idx) != 0)
 		return (1);
-	if (execute_commands(&hp) != 0)
+	if (execute_commands(&hp, shell) != 0)
 		return (1);
 	return (cleanup_and_wait(&hp));
 }

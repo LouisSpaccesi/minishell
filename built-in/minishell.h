@@ -129,8 +129,10 @@ void		read_heredoc_content(int temp_fd, char *delimiter);
 void		free_commands(char **cmd1, char **cmd2, char *temp_file);
 void		free_command_segments(char ***cmd_segments, int count);
 char		**create_command_array(char **args, int start, int end);
-void		execute_first_command(char **cmd1, int temp_fd, int *pipefd);
-void		execute_second_command(char **cmd2, int *pipefd, int temp_fd);
+void		execute_first_command(char **cmd1, int temp_fd, int *pipefd,
+				t_shell *shell);
+void		execute_second_command(char **cmd2, int *pipefd, int temp_fd,
+				t_shell *shell);
 int			count_pipes(char **args);
 int			wait_for_children(int pipe_count);
 int			execute_pipe_without_heredoc(char **args, t_shell *shell);

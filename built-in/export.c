@@ -71,15 +71,6 @@ static int	add_new_variable(t_shell *shell, char *new_entry)
 	return (1);
 }
 
-static int	handle_invalid_identifier(char *arg, char *var)
-{
-	ft_putstr_fd("minishell: export: `", 2);
-	ft_putstr_fd(arg, 2);
-	ft_putstr_fd("': not a valid identifier\n", 2);
-	free(var);
-	return (1);
-}
-
 static int	export_process_arg(char *arg, t_shell *shell)
 {
 	char	*var;
@@ -90,24 +81,32 @@ static int	export_process_arg(char *arg, t_shell *shell)
 	if (!var)
 		return (1);
 	if (!is_valid_identifier(var))
-		return (handle_invalid_identifier(arg, var));
+	{
+		ft_putstr_fd("minishell: export: `", 2);
+		ft_putstr_fd(arg, 2);
+		ft_putstr_fd("': not a valid identifier\n", 2);
+		free(var);
+		return (1);
+	}
 	if (ft_strchr(arg, '=') == NULL)
 	{
-		free(var);
+		free(var); 
 		return (0);
 	}
 	new_entry = create_env_entry(var, value);
 	if (!new_entry)
 	{
 		free(var);
-		return (1);
+		return (1); 
 	}
 	if (replace_variable(shell->env, var, new_entry))
-		return (0);
+	{
+		return (0); 
+	}
 	if (!add_new_variable(shell, new_entry))
 	{
-		free(var);
-		return (1);
+		free(var); 
+		return (1); 
 	}
 	free(var);
 	return (0);

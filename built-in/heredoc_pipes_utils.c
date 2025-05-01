@@ -34,21 +34,54 @@ int	init_heredoc_pipe(t_hd_pipe *hp, char **args, int heredoc_idx, int pipe_idx)
 	char	*delimiter;
 
 	if (heredoc_idx == -1 || pipe_idx == -1 || heredoc_idx > pipe_idx)
-		return (1);
-	ft_strcpy(hp->temp_file, "/tmp/minishell_heredoc_XXXXXX");
-	hp->temp_fd = mkstemp(hp->temp_file);
+		return (1); // Invalid sequence or missing tokens
+
+	// Use a fixed temporary file name
+	ft_strcpy(hp->temp_file, "/tmp/minishell_heredoc"); // Fixed name
+
+	// 1. Open for writing (create/truncate) - Replaces mkstemp part 1
+	hp->temp_fd = open(hp->temp_file, O_CREAT | O_WRONLY | O_TRUNC, 0600);
 	if (hp->temp_fd == -1)
-		return (1);
+	{
+		// Add error message?
+		ft_putstr_fd("minishell: failed to create heredoc file\n", 2);
+		return (1); // Return error if file creation fails
+	}
+
+	// 2. Read heredoc content and write to the file
 	delimiter = args[heredoc_idx + 1];
-	read_heredoc_content(hp->temp_fd, delimiter);
-	lseek(hp->temp_fd, 0, SEEK_SET);
+	read_heredoc_content(hp->temp_fd, delimiter); // Assume this func handles write errors
+
+	// 3. Close the write file descriptor - Replaces lseek part 1
+	if (close(hp->temp_fd) == -1)
+	{
+		// Add error message?
+		ft_putstr_fd("minishell: failed to close heredoc file after write\n", 2);
+		unlink(hp->temp_file); // Clean up the file
+		return (1);
+	}
+
+	// 4. Reopen the file for reading - Replaces lseek part 2
+	hp->temp_fd = open(hp->temp_file, O_RDONLY);
+	if (hp->temp_fd == -1)
+	{
+		// Add error message?
+		ft_putstr_fd("minishell: failed to reopen heredoc file for read\n", 2);
+		unlink(hp->temp_file); // Clean up the file
+		return (1); // Return error if reopening fails
+	}
+
+	// 5. Prepare the first command
+	// Note: count_args needs adjusting or validating if heredoc_idx is last arg
 	hp->cmd1 = create_command_array(args, 0, heredoc_idx);
 	if (!hp->cmd1)
 	{
-		close(hp->temp_fd);
+		close(hp->temp_fd); // Close the read fd
 		unlink(hp->temp_file);
 		return (1);
 	}
+
+	// Success
 	return (0);
 }
 
