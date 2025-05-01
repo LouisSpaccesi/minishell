@@ -12,36 +12,6 @@
 
 #include "minishell.h"
 
-static char	*get_env_value(char *var_name, char **envp)
-{
-	int		i;
-	size_t	len;
-
-	len = ft_strlen(var_name);
-	i = 0;
-	while (envp[i])
-	{
-		if (ft_strncmp(envp[i], var_name, len) == 0 && envp[i][len] == '=')
-			return (envp[i] + len + 1);
-		i++;
-	}
-	return (NULL);
-}
-
-void	print_env_var(char *var_name, char **envp)
-{
-	char	*value;
-
-	if (ft_strncmp(var_name, "PWD", 3) == 0)
-		ft_pwd_no_nl();
-	else
-	{
-		value = get_env_value(var_name, envp);
-		if (value)
-			printf("%s", value);
-	}
-}
-
 static int	is_n_option(char *arg)
 {
 	int	i;
@@ -58,26 +28,30 @@ static int	is_n_option(char *arg)
 	return (1);
 }
 
-int	ft_echo(int argc, char **argv, char **envp)
+int	ft_echo(char **args, t_shell *shell)
 {
 	int i;
 	int no_newline;
 
+	(void)shell; // Mark shell as unused for now, might be needed for expansion later
+
 	i = 1;
 	no_newline = 0;
-	while (i < argc && is_n_option(argv[i]))
+	// Check for -n option(s)
+	while (args[i] && is_n_option(args[i]))
 	{
 		no_newline = 1;
 		i++;
 	}
-	while (i < argc)
+	// Print arguments
+	while (args[i])
 	{
-		print_echo_arg(argv[i], envp);
-		if (i + 1 < argc)
-			printf(" ");
+		write(1, args[i], ft_strlen(args[i]));
+		if (args[i + 1])
+			write(1, " ", 1);
 		i++;
 	}
 	if (!no_newline)
-		printf("\n");
+		write(1, "\n", 1);
 	return (0);
 }

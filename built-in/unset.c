@@ -11,6 +11,21 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <ctype.h>
+
+static int is_valid_identifier(const char *var)
+{
+	if (!var || (!ft_isalpha(*var) && *var != '_'))
+		return (0);
+	var++;
+	while (*var)
+	{
+		if (!ft_isalnum(*var) && *var != '_')
+			return (0);
+		var++;
+	}
+	return (1);
+}
 
 static void	ft_unset_internal(char *args, t_shell *shell)
 {
@@ -39,23 +54,27 @@ static void	ft_unset_internal(char *args, t_shell *shell)
 	}
 }
 
-void	ft_unset_command(char *rl, t_shell *shell)
+int	ft_unset_command(char **args, t_shell *shell)
 {
-	char	*args;
-	int		i;
+	int	i = 1;
+	int	status = 0;
 
-	i = 0;
-	args = rl + 6;
-	while (args && args[i] == ' ')
-		i++;
-	args = &args[i];
-
-	if (args && *args)
+	// Iterate through arguments (variables to unset)
+	while (args[i])
 	{
-		char *space = ft_strchr(args, ' ');
-		if (space)
-			*space = '\0';
-
-		ft_unset_internal(args, shell);
+		if (!is_valid_identifier(args[i]))
+		{
+			ft_putstr_fd("minishell: unset: `", 2);
+			ft_putstr_fd(args[i], 2);
+			ft_putstr_fd("': not a valid identifier\n", 2);
+			status = 1; // Mark status as failed
+		}
+		else
+		{
+			// Only unset if the identifier is valid
+			ft_unset_internal(args[i], shell);
+		}
+		i++;
 	}
+	return (status); // Return 0 if all processed identifiers were valid, 1 otherwise
 }

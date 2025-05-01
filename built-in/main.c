@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "tokenizer.h"
 #include "minishell.h"
 
 char	**copy_all_env(char **envp)
@@ -67,42 +68,59 @@ static char	*read_command_line(t_shell *shell, char ***args)
 		return (NULL);
 	}
 	add_history(rl);
-	if (ft_strncmp(rl, "exit", 4) == 0)
+	*args = tokenize_command_line(rl, shell); // Utiliser notre nouveau tokenizer
+	if (!*args) // Gérer l'échec du tokenizer (ex: quote non fermée)
 	{
 		free(rl);
-		return (NULL);
+		shell->exit_status = 2; // Code d'erreur pour erreur de syntaxe (convention bash)
+		return (NULL); // Indiquer l'échec pour ne pas continuer
 	}
-	*args = ft_split(rl, ' ');
 	return (rl);
 }
 
-int	process_command(t_shell *shell)
+// Finds the index of the first non-empty argument.
+// Returns -1 if no valid argument is found.
+static int	find_first_valid_arg(char **args)
+{
+	int	i;
+
+	i = 0;
+	if (!args)
+		return (-1);
+	while (args[i] && args[i][0] == '\0')
+		i++;
+	if (!args[i])
+		return (-1);
+	return (i);
+}
+
+int process_command(t_shell *shell)
 {
 	char	*rl;
 	char	**args;
-	int		i;
+	int	first_arg_idx;
 
 	args = NULL;
 	rl = read_command_line(shell, &args);
 	if (!rl)
 		return (0);
-	if (args && args[0])
+	first_arg_idx = find_first_valid_arg(args);
+	if (first_arg_idx == -1)
+	{
+		shell->exit_status = 0;
+		free(rl);
+		if (args)
+			free_array(args);
+		return (1);
+	}
+	else
 	{
 		setup_exec_signals();
-		// Passer la structure shell complète
-		execute_command_part1(args, shell);
+		shell->exit_status = execute_command_part1(args + first_arg_idx, shell);
 		setup_signals();
-	}
-	free(rl);
-	if (args)
-	{
-		i = 0;
-		while (args[i])
-		{
-			free(args[i]);
-			i++;
-		}
-		free(args);
+		free(rl);
+		if (args)
+			free_array(args);
 	}
 	return (1);
 }

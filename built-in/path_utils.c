@@ -23,10 +23,32 @@ int	handle_child_process(char *cmd_path, char **args, char **envp,
 int	handle_parent_process(pid_t pid, char *cmd_path)
 {
 	int	status;
+	int	exit_status;
 
 	waitpid(pid, &status, 0);
 	free(cmd_path);
-	return (status);
+	if (WIFEXITED(status))
+	{
+		exit_status = WEXITSTATUS(status);
+	}
+	else if (WIFSIGNALED(status))
+	{
+		// Command terminated by signal
+		// Bash typically returns 128 + signal number
+		// Example: Ctrl+C (SIGINT = 2) -> 130
+		exit_status = 128 + WTERMSIG(status);
+		// Optionally print signal message to stderr
+		if (WTERMSIG(status) == SIGINT)
+			ft_putstr_fd("\n", 2); // Newline after Ctrl+C
+		else if (WTERMSIG(status) == SIGQUIT)
+			ft_putstr_fd("Quit (core dumped)\n", 2);
+	}
+	else
+	{
+		// Other termination cases (stopped, etc.) - treat as error
+		exit_status = EXIT_FAILURE; // General error status
+	}
+	return (exit_status);
 }
 
 int	exec_command(char **argv, char **envp)

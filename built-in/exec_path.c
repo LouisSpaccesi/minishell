@@ -14,15 +14,39 @@
 
 void	handle_exec_failure(char *cmd_path, char **cmd_args)
 {
-	ft_putstr_fd("bash: ", 2);
+	int exit_code = 126;
+
+	ft_putstr_fd("minishell: ", 2);
 	ft_putstr_fd(cmd_path, 2);
 	ft_putstr_fd(": ", 2);
-	ft_putendl_fd(strerror(errno), 2);
+
+	if (errno == ENOENT)
+	{
+		ft_putendl_fd("command not found", 2);
+		exit_code = 127;
+	}
+	else if (errno == EACCES)
+	{
+		struct stat st;
+		if (stat(cmd_path, &st) == 0 && S_ISDIR(st.st_mode))
+		{
+			ft_putendl_fd("Is a directory", 2);
+		}
+		else
+		{
+			ft_putendl_fd("Permission denied", 2);
+		}
+	}
+	else
+	{
+		ft_putendl_fd(strerror(errno), 2);
+	}
+
 	if (cmd_args)
 		free(cmd_args);
 	if (cmd_path)
 		free(cmd_path);
-	exit(EXIT_FAILURE);
+	exit(exit_code);
 }
 
 void	exec_cmd_child(char *cmd_path, char **args, char **envp, int arg_count)
@@ -50,9 +74,10 @@ void	exec_cmd_child(char *cmd_path, char **args, char **envp, int arg_count)
 
 int	handle_command_not_found(char *cmd)
 {
-	ft_putstr_fd("Command not found: ", 2);
-	ft_putendl_fd(cmd, 2);
-	return (0);
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(cmd, 2);
+	ft_putendl_fd(": command not found", 2);
+	return (127);
 }
 
 int	count_cmd_args(char **args)

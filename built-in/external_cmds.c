@@ -58,3 +58,55 @@ void	free_command_segments(char ***cmd_segments, int count)
 	}
 	free(cmd_segments);
 }
+
+int	execute_external_command(char **args, t_shell *shell, t_redir_info *redir_info)
+{
+	pid_t	pid;
+	int		status;
+	char	*cmd_path;
+
+	cmd_path = find_command_path(args[0], shell->env);
+	if (!cmd_path)
+	{
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(args[0], 2);
+		ft_putstr_fd(": command not found\n", 2);
+		return (127);
+	}
+
+	pid = fork();
+	if (pid == -1)
+	{
+		perror("minishell: fork failed");
+		free(cmd_path);
+		return (1);
+	}
+	else if (pid == 0)
+	{
+		if (redir_info && redir_info->redir_type != 0)
+		{
+			if (apply_redirection(redir_info) == -1)
+			{
+				free(cmd_path);
+				exit(EXIT_FAILURE);
+			}
+		}
+
+		if (execve(cmd_path, args, shell->env) == -1)
+		{
+			perror("minishell");
+			free(cmd_path);
+			exit(126);
+		}
+	}
+	else
+	{
+		waitpid(pid, &status, 0);
+		free(cmd_path);
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
+		else if (WIFSIGNALED(status))
+			return (128 + WTERMSIG(status));
+	}
+	return (status);
+}

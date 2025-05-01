@@ -86,13 +86,13 @@ void	copy_env(char **new_env, char **env, int count)
 	}
 }
 
-void ft_env(t_shell *shell)
+int ft_env_builtin(t_shell *shell)
 {
     int i = 0;
     t_env_var *current;
 
     // Afficher l'environnement d'origine
-    while (shell->env[i])
+    while (shell->env && shell->env[i])
     {
         if (shell->env[i] != NULL)
         {
@@ -112,4 +112,83 @@ void ft_env(t_shell *shell)
         write(STDOUT_FILENO, "\n", 1);
         current = current->next;
     }
+    return (0);
+}
+
+// Function to find the index of an environment variable
+static int	find_env_var_index(const char *var_name, char **envp)
+{
+	int i;
+	size_t len;
+
+	i = 0;
+	len = ft_strlen(var_name);
+	while (envp[i])
+	{
+		if (ft_strncmp(envp[i], var_name, len) == 0 && envp[i][len] == '=')
+			return (i);
+		i++;
+	}
+	return (-1); // Not found
+}
+
+// Function to get the value of an environment variable
+char	*get_env_value(char **envp, const char *var_name)
+{
+	int		idx;
+	char	*entry;
+	char	*equal_sign;
+
+	if (!envp || !var_name)
+		return (NULL);
+	idx = find_env_var_index(var_name, envp);
+	if (idx == -1)
+		return (NULL); // Not found
+	entry = envp[idx];
+	equal_sign = ft_strchr(entry, '=');
+	if (!equal_sign)
+		return (NULL); // Should not happen for standard env vars
+	return (equal_sign + 1); // Return pointer to the value part
+}
+
+// Function to set/update an environment variable
+// Returns 0 on success, 1 on failure (e.g., memory allocation)
+int	set_env_var(t_shell *shell, const char *var, const char *value)
+{
+	int			idx;
+	char		*new_entry;
+	char		**new_env;
+	size_t		current_size;
+
+	if (!var || !value || !shell)
+		return (1); // Invalid arguments
+
+	idx = find_env_var_index(var, shell->env); // Corrected argument order
+	new_entry = create_env(var, value);
+	if (!new_entry)
+		return (1); // Malloc failure
+
+	if (idx != -1)
+	{ // Variable exists, update it
+		free(shell->env[idx]);
+		shell->env[idx] = new_entry;
+	}
+	else
+	{ // Variable does not exist, add it
+		current_size = 0;
+		while (shell->env[current_size])
+			current_size++;
+		new_env = realloc(shell->env, (current_size + 2) * sizeof(char *));
+		if (!new_env)
+		{
+			free(new_entry);
+			perror("minishell: set_env_var: realloc failed");
+			return (1);
+		}
+		shell->env = new_env;
+		shell->env[current_size] = new_entry;
+		shell->env[current_size + 1] = NULL;
+	}
+
+	return (0); // Success
 }

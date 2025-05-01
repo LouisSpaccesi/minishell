@@ -13,12 +13,20 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void	ft_pwd(void)
+int	ft_pwd(void)
 {
 	char	pwd[1024];
 
-	getcwd(pwd, sizeof(pwd));
-	printf("%s\n", pwd);
+	if (getcwd(pwd, sizeof(pwd)) != NULL)
+	{
+		printf("%s\n", pwd);
+		return (0); // Success
+	}
+	else
+	{
+		perror("minishell: pwd"); // Error message
+		return (1); // Failure
+	}
 }
 
 void	ft_pwd_no_nl(void)

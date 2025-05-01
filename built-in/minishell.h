@@ -13,19 +13,25 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-# include "../libft/libft.h"
-# include <errno.h>
-# include <fcntl.h>
-# include <readline/history.h>
-# include <readline/readline.h>
 # include <stdio.h>
 # include <stdlib.h>
-# include <string.h>
-# include <sys/types.h>
-# include <sys/wait.h>
 # include <unistd.h>
-#include <signal.h>
-#include <termios.h>
+# include <string.h>
+# include <fcntl.h>
+# include <sys/wait.h>
+# include <signal.h>
+# include <sys/stat.h>
+# include <dirent.h>
+# include <sys/ioctl.h>
+# include <termios.h>
+# include <curses.h>
+# include <term.h>
+# include <readline/readline.h>
+# include <readline/history.h>
+# include <limits.h>
+# include <errno.h>
+
+# include "../libft/libft.h"
 
 typedef struct s_command
 {
@@ -65,38 +71,40 @@ typedef struct s_hd_pipe
 	pid_t	pid2;
 }			t_hd_pipe;
 
+// Structure to hold information about a single parsed redirection
+typedef struct s_redir_info
+{
+	int		redir_type; // 1(>), 2(>>), 3(<<), 4(<), 0(none)
+	char	*filename;
+	int		original_fd; // STDIN_FILENO or STDOUT_FILENO
+} t_redir_info;
+
 void		close_and_free(int *pipefd, char **cmd1, char **cmd2, int temp_fd);
 int			count_args(char **args, int start);
 void		free_commands(char **cmd1, char **cmd2, char *temp_file);
 int			ft_strncmp(const char *s1, const char *s2, size_t n);
-void ft_env(t_shell *shell);
-void		ft_pwd(void);
+int		ft_env_builtin(t_shell *shell);
 void		ft_pwd_no_nl(void);
-void		ft_cd(char *rl);
-int			ft_echo(int argc, char **argv, char **envp);
+int			ft_pwd(void);
+int			ft_echo(char **args, t_shell *shell);
+int			ft_cd(char **args, t_shell *shell);
+int			ft_export(char **args, t_shell *shell);
+int			ft_unset_command(char **args, t_shell *shell);
 void		ft_exit(char **args, t_shell *shell);
-void		ft_export(char *rl, t_shell *shell);
-char		*create_env(const char *var, const char *value);
 void		copy_env(char **new_env, char **env, int count);
-void		ft_unset_command(char *rl, t_shell *shell);
 void		free_array(char **array);
 char		*get_path_env(char **envp);
 char		*find_command_path(char *cmd, char **envp);
 int			exec_command(char **argv, char **envp);
 int			parse_args(char **args, char **envp);
-int			ft_redirect_output(char *filename);
-int			ft_redirect_output_append(char *filename);
 int			ft_redirect_input_heredoc(char *delimiter);
-void		ft_restore_output(int saved_stdout);
-void		ft_restore_input(int saved_stdin);
 int			execute_command_with_redirection(char **args, t_shell *shell);
 int			ft_strcmp(const char *s1, const char *s2);
 int			is_builtin(char *cmd);
 void		handle_complex_builtins(char **args, t_shell *shell);
 void		handle_env_builtins(char **args, t_shell *shell);
 void		handle_echo_cd(char **args, char **envp);
-int			handle_redirection(char **args, int *saved_stdout);
-char		**copy_all_env(char **envp);
+int			find_last_redirection(char **args, int *redirection_type);
 /* Fonctions spécifiques pour les cas complexes */
 int			execute_heredoc_pipe(char **args, t_shell *shell);
 t_shell		*init_shell(char **envp);
@@ -151,16 +159,15 @@ void		print_env_var(char *var_name, char **envp);
 void		read_heredoc_content(int temp_fd, char *delimiter);
 void		ft_restore_output(int saved_stdout);
 void		ft_restore_input(int saved_stdin);
-int			ft_redirect_output(char *filename);
-int			ft_redirect_output_append(char *filename);
-void		free_shell(t_shell *shell);
-t_shell		*init_shell(char **envp);
-int			process_command(t_shell *shell);
-char		*get_path_env(char **envp);
+int			ft_restore_fd(int original_fd, int saved_fd);
+int			parse_redirection(char **args, t_redir_info *redir_info);
+int			apply_redirection(t_redir_info *redir_info);
+int			ft_redirect_input_heredoc(char *delimiter);
+// Path utils
+char		*find_command_path(char *command, char **envp);
 char		*build_full_path(char *path, char *cmd);
 char		*search_in_paths(char **paths, char *cmd);
 void		free_paths_array(char **paths);
-char		*find_command_path(char *cmd, char **envp);
 void		handle_exec_failure(char *cmd_path, char **cmd_args);
 void		exec_cmd_child(char *cmd_path, char **args, char **envp,
 				int arg_count);
@@ -174,6 +181,20 @@ void	restore_terminal(void);
 int	is_eof(char *line);
 char **copy_env_safe(char **env);
 
+// Tokenizer & Expansion
+char	**tokenize_command_line(const char *line, t_shell *shell);
+char	*get_env_value(char **envp, const char *var_name);
+int		set_env_var(t_shell *shell, const char *varname, const char *value);
 
+// Builtin functions
+int execute_builtin(char **args, t_shell *shell);
+// External command execution
+int				execute_external_command(char **args, t_shell *shell, t_redir_info *redir_info);
+
+// Path utils
+char			*find_command_path(char *command, char **envp);
+
+// Cleanup function
+void			free_shell(t_shell *shell);
 
 #endif
