@@ -94,7 +94,7 @@ int	check_for_heredoc_pipe(char **args, int *has_heredoc, int *has_pipe)
 	return (0);
 }
 
-int	execute_pipe_without_heredoc(char **args, char **env_copy)
+int	execute_pipe_without_heredoc(char **args, t_shell *shell)
 {
 	char	***cmd_segments;
 	int		status;
@@ -102,11 +102,16 @@ int	execute_pipe_without_heredoc(char **args, char **env_copy)
 
 	cmd_segments = split_command_by_pipes(args);
 	if (!cmd_segments)
-		return (1);
-	status = execute_piped_commands_part1(cmd_segments, env_copy);
+		return (1); // Erreur de split
+	
+	// Passer le shell à la fonction suivante
+	status = execute_piped_commands_part1(cmd_segments, shell);
+	
+	// Compter pour libérer correctement
 	pipe_count = 0;
 	while (cmd_segments[pipe_count])
 		pipe_count++;
+	
 	free_command_segments(cmd_segments, pipe_count);
 	return (status);
 }

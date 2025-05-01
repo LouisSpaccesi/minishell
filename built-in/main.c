@@ -89,7 +89,8 @@ int	process_command(t_shell *shell)
 	if (args && args[0])
 	{
 		setup_exec_signals();
-		execute_command_part1(args, shell->env);
+		// Passer la structure shell complète
+		execute_command_part1(args, shell);
 		setup_signals();
 	}
 	free(rl);

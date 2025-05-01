@@ -94,8 +94,11 @@ void ft_env(t_shell *shell)
     // Afficher l'environnement d'origine
     while (shell->env[i])
     {
-        write(STDOUT_FILENO, shell->env[i], ft_strlen(shell->env[i]));
-        write(STDOUT_FILENO, "\n", 1);
+        if (shell->env[i] != NULL)
+        {
+            write(STDOUT_FILENO, shell->env[i], ft_strlen(shell->env[i]));
+            write(STDOUT_FILENO, "\n", 1);
+        }
         i++;
     }
 

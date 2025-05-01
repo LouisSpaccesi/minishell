@@ -28,27 +28,27 @@ int	count_pipes(char **args)
 	return (count);
 }
 
-int	execute_command_part1(char **args, char **env_copy)
+int	execute_command_part1(char **args, t_shell *shell)
 {
 	int	has_heredoc;
 	int	has_pipe;
 
 	check_for_heredoc_pipe(args, &has_heredoc, &has_pipe);
 	if (has_heredoc && has_pipe)
-		return (execute_heredoc_pipe(args, env_copy));
+		return (execute_heredoc_pipe(args, shell));
 	if (has_heredoc)
-		return (execute_command_with_redirection(args, env_copy));
-	return (execute_command_part2(args, env_copy));
+		return (execute_command_with_redirection(args, shell));
+	return (execute_command_part2(args, shell));
 }
 
-int	execute_command_part2(char **args, char **env_copy)
+int	execute_command_part2(char **args, t_shell *shell)
 {
 	int	pipe_count;
 
 	pipe_count = count_pipes(args);
 	if (pipe_count == 0)
-		return (execute_command_with_redirection(args, env_copy));
-	return (execute_pipe_without_heredoc(args, env_copy));
+		return (execute_command_with_redirection(args, shell));
+	return (execute_pipe_without_heredoc(args, shell));
 }
 
 void	handle_parent_pipes(int i, int pipe_count, int pipe_fds[2][2],

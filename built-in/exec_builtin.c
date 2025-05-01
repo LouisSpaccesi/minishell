@@ -12,36 +12,27 @@
 
 #include "minishell.h"
 
-void handle_simple_builtins(char **args, char **env_copy, int saved_stdout)
+void handle_simple_builtins(char **args, t_shell *shell, int saved_stdout)
 {
-    t_shell shell;
-
     if (ft_strncmp(args[0], "env", 4) == 0)
     {
-        shell.env = env_copy;
-        shell.exit_status = 0;
-        shell.saved_stdout = saved_stdout;
-        shell.saved_stdin = -1;
-        shell.original_stdin = -1;
-        shell.custom_env = NULL; 
-        ft_env(&shell);
+        shell->saved_stdout = saved_stdout; 
+        ft_env(shell);
     }
     else if (ft_strncmp(args[0], "pwd", 4) == 0)
-        ft_pwd();
+        ft_pwd(); 
     else if (ft_strncmp(args[0], "exit", 5) == 0)
     {
         if (saved_stdout != -1)
             ft_restore_output(saved_stdout);
-        shell.env = env_copy;
-        shell.exit_status = 0;
-        ft_exit(args, &shell);
+        ft_exit(args, shell); 
     }
 }
 
 void	handle_echo_cd(char **args, char **envp)
 {
 	int		argc;
-	char	cmd[1024];
+	char	cmd[1024]; 
 
 	if (ft_strncmp(args[0], "echo", 5) == 0)
 	{
@@ -59,54 +50,64 @@ void	handle_echo_cd(char **args, char **envp)
 	}
 }
 
-void	handle_env_builtins(char **args, char ***env_copy)
+void	handle_env_builtins(char **args, t_shell *shell)
 {
-	char	cmd[1024];
+	char	cmd[1024]; 
+	char	*arg_ptr = NULL;
+
+	if (args[1])
+		arg_ptr = args[1];
 
 	if (ft_strncmp(args[0], "export", 7) == 0)
 	{
 		ft_strcpy(cmd, "export ");
-		if (args[1])
-			ft_strcat(cmd, args[1]);
-		ft_export(cmd, env_copy);
+		if (arg_ptr)
+			ft_strcat(cmd, arg_ptr);
+		else
+			cmd[ft_strlen("export ")] = '\0';
+		
+		ft_export(cmd, shell); 
 	}
 	else if (ft_strncmp(args[0], "unset", 6) == 0)
 	{
 		ft_strcpy(cmd, "unset ");
-		if (args[1])
-			ft_strcat(cmd, args[1]);
-		ft_unset_command(cmd, env_copy);
+		if (arg_ptr)
+			ft_strcat(cmd, arg_ptr);
+		else
+			cmd[ft_strlen("unset ")] = '\0';
+		
+		ft_unset_command(cmd, shell); 
 	}
 }
 
-void	handle_complex_builtins(char **args, char **env_copy)
+void	handle_complex_builtins(char **args, t_shell *shell)
 {
 	if (ft_strncmp(args[0], "echo", 5) == 0 || ft_strncmp(args[0], "cd",
 			3) == 0)
-		handle_echo_cd(args, env_copy);
+		handle_echo_cd(args, shell->env); 
 	else
-		handle_env_builtins(args, &env_copy);
+		handle_env_builtins(args, shell); 
 }
 
-static int handle_command_execution(t_command *cmd, char **args, char **env_copy, int saved_stdout)
+static int handle_command_execution(t_command *cmd, char **args, t_shell *shell, int saved_stdout)
 {
     if (cmd->is_builtin)
     {
         if (ft_strncmp(args[0], "env", 4) == 0 || ft_strncmp(args[0], "pwd", 
                 4) == 0 || ft_strncmp(args[0], "exit", 5) == 0)
-            handle_simple_builtins(args, env_copy, saved_stdout);
+            handle_simple_builtins(args, shell, saved_stdout); 
         else
-            handle_complex_builtins(args, env_copy);
+            handle_complex_builtins(args, shell); 
     }
     else
-        parse_args(args, env_copy);
+        parse_args(args, shell->env); 
     
     if (saved_stdout != -1)
         ft_restore_output(saved_stdout);
     return (0);
 }
 
-int execute_command_with_redirection(char **args, char **env_copy)
+int execute_command_with_redirection(char **args, t_shell *shell)
 {
     t_command cmd;
     int saved_stdout;
@@ -124,5 +125,5 @@ int execute_command_with_redirection(char **args, char **env_copy)
     if (handle_redirection(args, &saved_stdout) != 0)
         return (1);
     
-    return (handle_command_execution(&cmd, args, env_copy, saved_stdout));
+    return (handle_command_execution(&cmd, args, shell, saved_stdout));
 }

@@ -47,7 +47,7 @@ int	count_segment_size(char **args, int i)
 	return (k);
 }
 
-int	execute_piped_commands_part1(char ***cmd_segments, char **env_copy)
+int	execute_piped_commands_part1(char ***cmd_segments, t_shell *shell)
 {
 	int		i;
 	int		pipe_count;
@@ -59,12 +59,11 @@ int	execute_piped_commands_part1(char ***cmd_segments, char **env_copy)
 		i++;
 	pipe_count = i - 1;
 	if (pipe_count == 0)
-		return (execute_command_with_redirection(cmd_segments[0], env_copy));
+		return (execute_command_with_redirection(cmd_segments[0], shell));
 	pids = malloc(sizeof(pid_t) * (pipe_count + 1));
 	if (!pids)
 		return (1);
-	result = execute_piped_commands_setup(cmd_segments, env_copy, pipe_count,
-			pids);
+	result = execute_piped_commands_setup(cmd_segments, shell, pipe_count, pids);
 	if (result != 0)
 	{
 		free(pids);
@@ -86,7 +85,7 @@ int	init_command_pipes(int i, int pipe_count, int pipe_fds[2][2],
 	return (0);
 }
 
-int	execute_piped_commands_setup(char ***cmd_segments, char **env_copy,
+int	execute_piped_commands_setup(char ***cmd_segments, t_shell *shell,
 		int pipe_count, pid_t *pids)
 {
 	int	i;
@@ -105,8 +104,8 @@ int	execute_piped_commands_setup(char ***cmd_segments, char **env_copy,
 		if (pids[i] == 0)
 		{
 			setup_child_pipes(i, pipe_count, pipe_fds, current_pipe);
-			execute_command_with_redirection(cmd_segments[i], env_copy);
-			exit(0);
+			execute_command_with_redirection(cmd_segments[i], shell);
+			exit(shell->exit_status);
 		}
 		else
 			handle_parent_pipes(i, pipe_count, pipe_fds, &current_pipe);

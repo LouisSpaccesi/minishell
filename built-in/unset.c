@@ -12,40 +12,50 @@
 
 #include "minishell.h"
 
-void	ft_unset(char *args, char ***env)
+static void	ft_unset_internal(char *args, t_shell *shell)
 {
 	int	i;
 	int	var_len;
 
 	i = 0;
 	var_len = ft_strlen(args);
-	while ((*env)[i])
+	if (!shell || !shell->env)
+		return;
+	while (shell->env[i])
 	{
-		if (ft_strncmp((*env)[i], args, var_len) == 0
-			&& (*env)[i][var_len] == '=')
+		if (ft_strncmp(shell->env[i], args, var_len) == 0
+			&& shell->env[i][var_len] == '=')
 		{
-			free((*env)[i]);
-			while ((*env)[i + 1])
+			free(shell->env[i]);
+			while (shell->env[i + 1])
 			{
-				(*env)[i] = (*env)[i + 1];
+				shell->env[i] = shell->env[i + 1];
 				i++;
 			}
-			(*env)[i] = NULL;
+			shell->env[i] = NULL;
 			return ;
 		}
 		i++;
 	}
 }
 
-void	ft_unset_command(char *rl, char ***env)
+void	ft_unset_command(char *rl, t_shell *shell)
 {
 	char	*args;
 	int		i;
 
 	i = 0;
 	args = rl + 6;
-	while (args[i] == ' ')
+	while (args && args[i] == ' ')
 		i++;
-	if (args[i])
-		ft_unset(args, env);
+	args = &args[i];
+
+	if (args && *args)
+	{
+		char *space = ft_strchr(args, ' ');
+		if (space)
+			*space = '\0';
+
+		ft_unset_internal(args, shell);
+	}
 }

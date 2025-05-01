@@ -64,13 +64,13 @@ int	cleanup_and_wait(t_hd_pipe *hp)
 	return (0);
 }
 
-int	execute_heredoc_pipe(char **args, char **env_copy)
+int	execute_heredoc_pipe(char **args, t_shell *shell)
 {
 	int			heredoc_idx;
 	int			pipe_idx;
 	t_hd_pipe	hp;
 
-	(void)env_copy;
+	(void)shell;
 	find_special_tokens(args, &heredoc_idx, &pipe_idx);
 	if (init_heredoc_pipe(&hp, args, heredoc_idx, pipe_idx) != 0)
 		return (1);

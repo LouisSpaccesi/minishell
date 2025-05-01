@@ -56,7 +56,7 @@ static int replace_variable(char **env, char *var, char *new_entry)
     
     i = 0;
     var_len = ft_strlen(var);
-    while (env[i])
+    while (env && env[i]) 
     {
         if (ft_strncmp(env[i], var, var_len) == 0 && env[i][var_len] == '=')
         {
@@ -69,19 +69,18 @@ static int replace_variable(char **env, char *var, char *new_entry)
     return (0);
 }
 
-static int add_new_variable(char ***env_ptr, char *var, char *new_entry)
+static int add_new_variable(t_shell *shell, char *new_entry)
 {
     int count = 0;
     char **new_env;
     int i;
     
-    (void)var;
+    if (shell->env)
+    {
+        while (shell->env[count])
+            count++;
+    }
     
-    // Compter les variables
-    while ((*env_ptr)[count])
-        count++;
-    
-    // Allouer un tableau plus grand
     new_env = malloc((count + 2) * sizeof(char *));
     if (!new_env)
     {
@@ -89,28 +88,25 @@ static int add_new_variable(char ***env_ptr, char *var, char *new_entry)
         return (0);
     }
     
-    // Copier les pointeurs existants
     i = 0;
     while (i < count)
     {
-        new_env[i] = (*env_ptr)[i];
+        new_env[i] = shell->env[i];
         i++;
     }
     
-    // Ajouter la nouvelle entrée
     new_env[count] = new_entry;
     new_env[count + 1] = NULL;
     
-    // Libérer seulement le tableau
-    free(*env_ptr);
+    if (shell->env)
+        free(shell->env);
     
-    // Mettre à jour le pointeur
-    *env_ptr = new_env;
+    shell->env = new_env;
     
     return (1);
 }
 
-void ft_export(char *rl, char ***env_ptr)
+void ft_export(char *rl, t_shell *shell)
 {
     char *var;
     char *value;
@@ -127,12 +123,11 @@ void ft_export(char *rl, char ***env_ptr)
         return;
     }
     
-    if (!replace_variable(*env_ptr, var, new_entry))
+    if (!replace_variable(shell->env, var, new_entry))
     {
-        if (!add_new_variable(env_ptr, var, new_entry))
+        if (!add_new_variable(shell, new_entry))
         {
             free(var);
-            free(new_entry);
             return;
         }
     }
