@@ -1,5 +1,17 @@
-#include "tokenizer.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/01 21:09:50 by fben-ham          #+#    #+#             */
+/*   Updated: 2025/05/01 21:11:34 by fben-ham         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
+#include "tokenizer.h"
 
 char	**copy_all_env(char **envp)
 {
@@ -48,7 +60,6 @@ static char	*read_command_line(t_shell *shell, char ***args)
 {
 	char	*rl;
 
-	dup2(shell->original_stdin, STDIN_FILENO);
 	rl = readline("minishell > ");
 	if (is_eof(rl))
 	{
@@ -80,34 +91,51 @@ static int	find_first_valid_arg(char **args)
 	return (i);
 }
 
-int process_command(t_shell *shell)
+static char	**read_and_validate_input(t_shell *shell, char ***args_base_ptr,
+		char **rl_ptr)
 {
-	char	*rl;
-	char	**args;
 	int	first_arg_idx;
 
-	args = NULL;
-	rl = read_command_line(shell, &args);
-	if (!rl)
-		return (0);
-	first_arg_idx = find_first_valid_arg(args);
+	*args_base_ptr = NULL;
+	*rl_ptr = read_command_line(shell, args_base_ptr);
+	if (!(*rl_ptr))
+		return (NULL);
+	first_arg_idx = find_first_valid_arg(*args_base_ptr);
 	if (first_arg_idx == -1)
 	{
 		shell->exit_status = 0;
-		free(rl);
-		if (args)
-			free_array(args);
+		free(*rl_ptr);
+		*rl_ptr = NULL;
+		if (*args_base_ptr)
+			free_array(*args_base_ptr);
+		*args_base_ptr = NULL;
+		return (NULL);
+	}
+	return ((*args_base_ptr) + first_arg_idx);
+}
+
+static void	execute_validated_command(t_shell *shell, char **valid_args)
+{
+	setup_exec_signals();
+	shell->exit_status = execute_command_part1(valid_args, shell);
+	setup_signals();
+}
+
+int	process_command(t_shell *shell)
+{
+	char	*rl;
+	char	**args_base;
+	char	**valid_args;
+
+	valid_args = read_and_validate_input(shell, &args_base, &rl);
+	if (!rl && !args_base)
+		return (0);
+	if (!valid_args)
 		return (1);
-	}
-	else
-	{
-		setup_exec_signals();
-		shell->exit_status = execute_command_part1(args + first_arg_idx, shell);
-		setup_signals();
-		free(rl);
-		if (args)
-			free_array(args);
-	}
+	execute_validated_command(shell, valid_args);
+	free(rl);
+	if (args_base)
+		free_array(args_base);
 	return (1);
 }
 

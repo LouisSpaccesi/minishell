@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   path_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:50:00 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/28 18:29:47 by louis            ###   ########.fr       */
+/*   Updated: 2025/05/01 21:12:18 by fben-ham         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,21 +33,14 @@ int	handle_parent_process(pid_t pid, char *cmd_path)
 	}
 	else if (WIFSIGNALED(status))
 	{
-		// Command terminated by signal
-		// Bash typically returns 128 + signal number
-		// Example: Ctrl+C (SIGINT = 2) -> 130
 		exit_status = 128 + WTERMSIG(status);
-		// Optionally print signal message to stderr
 		if (WTERMSIG(status) == SIGINT)
-			ft_putstr_fd("\n", 2); // Newline after Ctrl+C
+			ft_putstr_fd("\n", 2);
 		else if (WTERMSIG(status) == SIGQUIT)
 			ft_putstr_fd("Quit (core dumped)\n", 2);
 	}
 	else
-	{
-		// Other termination cases (stopped, etc.) - treat as error
-		exit_status = EXIT_FAILURE; // General error status
-	}
+		exit_status = EXIT_FAILURE;
 	return (exit_status);
 }
 

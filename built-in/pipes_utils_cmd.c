@@ -63,7 +63,8 @@ int	execute_piped_commands_part1(char ***cmd_segments, t_shell *shell)
 	pids = malloc(sizeof(pid_t) * (pipe_count + 1));
 	if (!pids)
 		return (1);
-	result = execute_piped_commands_setup(cmd_segments, shell, pipe_count, pids);
+	result = execute_piped_commands_setup(cmd_segments, shell, pipe_count,
+			pids);
 	if (result != 0)
 	{
 		free(pids);

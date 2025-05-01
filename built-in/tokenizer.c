@@ -1,9 +1,9 @@
-#include "tokenizer.h"
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdbool.h>
 #include "../libft/libft.h"
 #include "minishell.h"
+#include "tokenizer.h"
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 static char	*append_str(char *s1, char *s2)
 {
@@ -35,7 +35,8 @@ static char	*handle_regular_var(t_tokenizer_state *state, t_shell *shell)
 
 	var_start = state->pos;
 	result = NULL;
-	while (state->line[state->pos] == '_' || ft_isalnum((unsigned char)state->line[state->pos]))
+	while (state->line[state->pos] == '_'
+		|| ft_isalnum((unsigned char)state->line[state->pos]))
 		state->pos++;
 	var_len = state->pos - var_start;
 	var_name = ft_substr(state->line, var_start, var_len);
@@ -56,7 +57,8 @@ static char	*get_variable_value(t_tokenizer_state *state, t_shell *shell)
 	state->pos++;
 	if (state->line[state->pos] == '?')
 		return (handle_exit_status_var(state, shell));
-	else if (state->line[state->pos] == '_' || ft_isalpha((unsigned char)state->line[state->pos]))
+	else if (state->line[state->pos] == '_'
+		|| ft_isalpha((unsigned char)state->line[state->pos]))
 		return (handle_regular_var(state, shell));
 	else
 		return (ft_strdup("$"));
@@ -69,7 +71,8 @@ static int	add_token(t_tokenizer_state *state, char *token)
 	if (state->token_count >= state->capacity)
 	{
 		state->capacity = (state->capacity == 0) ? 10 : state->capacity * 2;
-		new_tokens = realloc(state->tokens, (state->capacity + 1) * sizeof(char *));
+		new_tokens = realloc(state->tokens, (state->capacity + 1)
+				* sizeof(char *));
 		if (!new_tokens)
 		{
 			free(token);
@@ -88,24 +91,53 @@ static int	add_token(t_tokenizer_state *state, char *token)
 
 static void	skip_spaces(t_tokenizer_state *state)
 {
-	while (state->line[state->pos] && isspace((unsigned char)state->line[state->pos]))
+	while (state->line[state->pos]
+		&& isspace((unsigned char)state->line[state->pos]))
 	{
 		state->pos++;
 	}
 }
 
-static bool	handle_quotes(t_tokenizer_state *state, bool *in_single_quotes, bool *in_double_quotes)
+static char	*handle_special_operators(t_tokenizer_state *state, char *result)
 {
-	char	quote_char;
+	char	temp_char_str[2];
+	char	op;
 
-	quote_char = state->line[state->pos];
-	if (quote_char == '\'' && !*in_double_quotes)
+	op = state->line[state->pos];
+	temp_char_str[1] = '\\0';
+	if (op == '<' || op == '>')
+	{
+		temp_char_str[0] = op;
+		result = append_str(result, ft_strdup(temp_char_str));
+		state->pos++;
+		if (state->line[state->pos] == op)
+		{
+			result = append_str(result, ft_strdup(temp_char_str));
+			state->pos++;
+		}
+		return (result);
+	}
+	if (op == '|')
+	{
+		temp_char_str[0] = op;
+		result = append_str(result, ft_strdup(temp_char_str));
+		state->pos++;
+		return (result);
+	}
+	return (NULL);
+}
+
+// Helper to handle quote toggling
+static bool	process_quoted_char(t_tokenizer_state *state,
+		bool *in_single_quotes, bool *in_double_quotes)
+{
+	if (state->line[state->pos] == '\\'' && !*in_double_quotes)
 	{
 		*in_single_quotes = !*in_single_quotes;
 		state->pos++;
 		return (true);
 	}
-	if (quote_char == '"' && !*in_single_quotes)
+	if (state->line[state->pos] == '"' && !*in_single_quotes)
 	{
 		*in_double_quotes = !*in_double_quotes;
 		state->pos++;
@@ -114,36 +146,68 @@ static bool	handle_quotes(t_tokenizer_state *state, bool *in_single_quotes, bool
 	return (false);
 }
 
-static char	*extract_token(t_tokenizer_state *state, t_shell *shell)
+static bool	process_variable_expansion(t_tokenizer_state *state, t_shell *shell,
+		char **result, bool in_single_quotes)
 {
-	char	*result;
-	bool	in_single_quotes;
-	bool	in_double_quotes;
+	char	*var_value;
+
+	if (state->line[state->pos] == '$' && !in_single_quotes)
+	{
+		var_value = get_variable_value(state, shell);
+		if (var_value)
+		{
+			*result = append_str(*result, var_value);
+			return (true);
+		}
+	}
+	return (false);
+}
+
+// Helper containing the main token processing loop
+static char	*process_token_loop(t_tokenizer_state *state, t_shell *shell,
+		char *result, bool *in_single_quotes, bool *in_double_quotes)
+{
 	char	temp_char_str[2];
 
-	result = ft_strdup("");
-	in_single_quotes = false;
-	in_double_quotes = false;
-	temp_char_str[1] = '\0';
+	temp_char_str[1] = '\\0';
 	while (state->line[state->pos])
 	{
-		if (handle_quotes(state, &in_single_quotes, &in_double_quotes))
+		if (process_quoted_char(state, in_single_quotes, in_double_quotes))
 			continue ;
-		if (!in_single_quotes && !in_double_quotes && 
-			isspace((unsigned char)state->line[state->pos]))
+		if (!*in_single_quotes && !*in_double_quotes
+			&& (isspace((unsigned char)state->line[state->pos])
+				|| state->line[state->pos] == '<'
+				|| state->line[state->pos] == '>'
+				|| state->line[state->pos] == '|'))
 			break ;
-		if (state->line[state->pos] == '$' && !in_single_quotes)
-		{
-			result = append_str(result, get_variable_value(state, shell));
+		if (process_variable_expansion(state, shell, &result,
+				*in_single_quotes))
 			continue ;
-		}
 		temp_char_str[0] = state->line[state->pos];
 		result = append_str(result, ft_strdup(temp_char_str));
 		state->pos++;
 	}
+	return (result);
+}
+
+static char	*extract_token(t_tokenizer_state *state, t_shell *shell)
+{
+	char	*result;
+	char	*operator_token;
+	bool	in_single_quotes;
+	bool	in_double_quotes;
+
+	result = ft_strdup("");
+	in_single_quotes = false;
+	in_double_quotes = false;
+	operator_token = handle_special_operators(state, result);
+	if (operator_token)
+		return (operator_token); // Return early if it was an operator
+	result = process_token_loop(state, shell, result, &in_single_quotes,
+			&in_double_quotes);
 	if (in_single_quotes || in_double_quotes)
 	{
-		ft_putstr_fd("minishell: syntax error: unclosed quote\n", 2);
+		ft_putstr_fd("minishell: syntax error: unclosed quote\\n", 2);
 		shell->exit_status = 2;
 		free(result);
 		return (NULL);
@@ -168,7 +232,6 @@ char	**tokenize_command_line(const char *line, t_shell *shell)
 		return (NULL);
 	state.tokens[0] = NULL;
 	state.capacity = 0;
-
 	while (line[state.pos])
 	{
 		skip_spaces(&state);
@@ -177,9 +240,10 @@ char	**tokenize_command_line(const char *line, t_shell *shell)
 		current_token = extract_token(&state, shell);
 		if (!current_token)
 		{
-			 while (state.token_count > 0) free(state.tokens[--state.token_count]);
-			 free(state.tokens);
-			 return NULL; 
+			while (state.token_count > 0)
+				free(state.tokens[--state.token_count]);
+			free(state.tokens);
+			return (NULL);
 		}
 		if (!add_token(&state, current_token))
 		{

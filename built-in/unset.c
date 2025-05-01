@@ -8,7 +8,7 @@ static void	ft_unset_internal(char *args, t_shell *shell)
 	i = 0;
 	var_len = ft_strlen(args);
 	if (!shell || !shell->env)
-		return;
+		return ;
 	while (shell->env[i])
 	{
 		if (ft_strncmp(shell->env[i], args, var_len) == 0

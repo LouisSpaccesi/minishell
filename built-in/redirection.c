@@ -1,34 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   redirection.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/01 21:28:37 by fben-ham          #+#    #+#             */
+/*   Updated: 2025/05/01 21:28:37 by fben-ham         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	get_redirection_type(char *arg)
 {
 	if (!arg)
 		return (0);
-	if (ft_strncmp(arg, ">>", 3) == 0)
+	if (ft_strncmp(arg, ">>", 2) == 0 && arg[2] == '\0')
 		return (2);
-	else if (ft_strncmp(arg, ">", 2) == 0)
+	else if (ft_strncmp(arg, ">", 1) == 0 && arg[1] == '\0')
 		return (1);
-	else if (ft_strncmp(arg, "<<", 3) == 0)
+	else if (ft_strncmp(arg, "<<", 2) == 0 && arg[2] == '\0')
 		return (3);
-	else if (ft_strncmp(arg, "<", 2) == 0)
+	else if (ft_strncmp(arg, "<", 1) == 0 && arg[1] == '\0')
 		return (4);
 	return (0);
-}
-
-static void	remove_redirection_args(char **args, int index)
-{
-	int i;
-
-	if (!args || !args[index] || !args[index + 1])
-		return;
-	i = index;
-	while (args[i + 2])
-	{
-		args[i] = args[i + 2];
-		i++;
-	}
-	args[i] = NULL;
-	args[i + 1] = NULL;
 }
 
 int	find_last_redirection(char **args, int *redirection_type)
@@ -49,7 +45,8 @@ int	find_last_redirection(char **args, int *redirection_type)
 		{
 			if (!args[i + 1])
 			{
-				ft_putstr_fd("minishell: syntax error near unexpected token `newline'\n", 2);
+				ft_putstr_fd("minishell: syntax error near unexpected token `newline'\n",
+					2);
 				return (-2);
 			}
 			last_redir = i;
@@ -66,21 +63,13 @@ int	ft_restore_fd(int original_fd, int saved_fd)
 	{
 		if (dup2(saved_fd, original_fd) == -1)
 		{
-			ft_putstr_fd("minishell: restore fd failed: ", STDERR_FILENO);
-			ft_putendl_fd(strerror(errno), STDERR_FILENO);
+			perror("minishell: restore fd failed");
 			close(saved_fd);
 			return (-1);
 		}
 		close(saved_fd);
 	}
 	return (0);
-}
-
-int	ft_redirect_input_heredoc(char *delimiter)
-{
-	(void)delimiter;
-	ft_putstr_fd("minishell: heredoc not implemented yet\n", 2);
-	return (-1);
 }
 
 int	parse_redirection(char **args, t_redir_info *redir_info)
@@ -107,15 +96,13 @@ int	parse_redirection(char **args, t_redir_info *redir_info)
 
 int	apply_redirection(t_redir_info *redir_info)
 {
-	int	saved_fd;
+	int saved_fd;
 
 	saved_fd = -1;
 	if (redir_info->redir_type == 1)
 		saved_fd = ft_redirect_output(redir_info->filename);
 	else if (redir_info->redir_type == 2)
 		saved_fd = ft_redirect_output_append(redir_info->filename);
-	else if (redir_info->redir_type == 3)
-		saved_fd = ft_redirect_input_heredoc(redir_info->filename);
 	else if (redir_info->redir_type == 4)
 		saved_fd = ft_redirect_input(redir_info->filename);
 	return (saved_fd);

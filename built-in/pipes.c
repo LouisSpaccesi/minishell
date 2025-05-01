@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipes.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/01 21:12:46 by fben-ham          #+#    #+#             */
+/*   Updated: 2025/05/01 21:37:26 by lospacce         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-char	**create_command_segment(char **args, int *start_idx, int seg_size)
+char	**create_pipe_segment(char **args, int *start_idx, int seg_size)
 {
 	char	**segment;
 	int		i;
@@ -12,40 +24,48 @@ char	**create_command_segment(char **args, int *start_idx, int seg_size)
 	while (i < seg_size)
 	{
 		segment[i] = ft_strdup(args[*start_idx]);
+		(*start_idx)++;
 		i++;
 	}
 	segment[i] = NULL;
 	return (segment);
 }
 
-static char ***allocate_cmd_segments(int pipe_count)
+static char	***allocate_cmd_segments(int pipe_count)
 {
-    char ***cmd_segments = (char ***)malloc(sizeof(char **) * (pipe_count + 2));
-    return cmd_segments;
+	char	***cmd_segments;
+
+	cmd_segments = (char ***)malloc(sizeof(char **) * (pipe_count + 2));
+	return (cmd_segments);
 }
 
-char ***split_command_by_pipes(char **args)
+char	***split_command_by_pipes(char **args)
 {
-    int i = 0, j = 0, pipe_count, seg_size;
-    char ***cmd_segments;
-    
-    pipe_count = count_pipes(args);
-    if (!(cmd_segments = allocate_cmd_segments(pipe_count)))
-        return (NULL);
-    while (j <= pipe_count)
-    {
-        seg_size = count_segment_size(args, i);
-        if (!(cmd_segments[j] = create_segment(args, &i, seg_size)))
-        {
-            free_command_segments(cmd_segments, j);
-            return (NULL);
-        }
-        if (args[i] && !ft_strncmp(args[i], "|", 2))
-            i++;
-        j++;
-    }
-    cmd_segments[j] = NULL;
-    return (cmd_segments);
+	int		i;
+	int		j;
+	int		pipe_count;
+	char	***cmd_segments;
+
+	i = 0;
+	j = 0;
+	pipe_count = count_pipes(args);
+	cmd_segments = allocate_cmd_segments(pipe_count);
+	if (!cmd_segments)
+		return (NULL);
+	while (j <= pipe_count)
+	{
+		if (!(cmd_segments[j] = create_segment(args, &i,
+					count_segment_size(args, i))))
+		{
+			free_command_segments(cmd_segments, j);
+			return (NULL);
+		}
+		if (args[i] && !ft_strncmp(args[i], "|", 2))
+			i++;
+		j++;
+	}
+	cmd_segments[j] = NULL;
+	return (cmd_segments);
 }
 
 void	setup_child_pipes(int i, int pipe_count, int pipe_fds[2][2],
@@ -64,25 +84,23 @@ void	setup_child_pipes(int i, int pipe_count, int pipe_fds[2][2],
 	}
 }
 
-int	check_for_heredoc_pipe(char **args, int *has_heredoc, int *has_pipe)
+static int	handle_optional_heredoc(char **args, t_shell *shell)
 {
-	int	i;
+	int	has_heredoc;
+	int	has_pipe;
+	int	saved_heredoc_fd;
 
-	*has_heredoc = 0;
-	*has_pipe = 0;
-	i = 0;
-	while (args[i])
+	check_for_heredoc_pipe(args, &has_heredoc, &has_pipe);
+	if (has_heredoc)
 	{
-		if (ft_strncmp(args[i], "<<", 3) == 0)
-			*has_heredoc = 1;
-		else if (ft_strncmp(args[i], "|", 2) == 0)
-			*has_pipe = 1;
-		i++;
+		saved_heredoc_fd = handle_heredoc_processing_for_pipe_segment(args,
+				shell);
+		return (saved_heredoc_fd);
 	}
-	return (0);
+	return (-1);
 }
 
-int	execute_pipe_without_heredoc(char **args, t_shell *shell)
+static int	split_exec_cleanup_pipes(char **args, t_shell *shell)
 {
 	char	***cmd_segments;
 	int		status;
@@ -96,5 +114,19 @@ int	execute_pipe_without_heredoc(char **args, t_shell *shell)
 	while (cmd_segments[pipe_count])
 		pipe_count++;
 	free_command_segments(cmd_segments, pipe_count);
+	return (status);
+}
+
+int	execute_pipe_logic(char **args, t_shell *shell)
+{
+	int	status;
+	int	saved_heredoc_fd;
+
+	saved_heredoc_fd = handle_optional_heredoc(args, shell);
+	if (saved_heredoc_fd == -1 && shell->exit_status != 0)
+		return (shell->exit_status);
+	status = split_exec_cleanup_pipes(args, shell);
+	if (saved_heredoc_fd != -1)
+		ft_restore_fd(STDIN_FILENO, saved_heredoc_fd);
 	return (status);
 }

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   echo.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/01 18:34:53 by fben-ham          #+#    #+#             */
+/*   Updated: 2025/05/01 20:27:06 by fben-ham         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	is_n_option(char *arg)
@@ -18,11 +30,10 @@ static int	is_n_option(char *arg)
 
 int	ft_echo(char **args, t_shell *shell)
 {
-	int i;
-	int no_newline;
+	int	i;
+	int	no_newline;
 
 	(void)shell;
-
 	i = 1;
 	no_newline = 0;
 	while (args[i] && is_n_option(args[i]))

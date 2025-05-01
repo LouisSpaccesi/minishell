@@ -1,5 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   export.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/01 20:32:32 by fben-ham          #+#    #+#             */
+/*   Updated: 2025/05/01 20:37:14 by fben-ham         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
+// This helper extracts name and sets value pointer.
+// Keep it static as it's only used by validate_export_arg here.
 static char	*extract_variable_name(const char *arg, char **value_ptr)
 {
 	char	*equals_pos;
@@ -11,7 +25,7 @@ static char	*extract_variable_name(const char *arg, char **value_ptr)
 	if (!equals_pos)
 	{
 		var_len = ft_strlen(arg);
-		*value_ptr = "";
+		*value_ptr = ""; // Point to empty string if no '='
 	}
 	else
 	{
@@ -26,90 +40,42 @@ static char	*extract_variable_name(const char *arg, char **value_ptr)
 	return (var);
 }
 
-static int	replace_variable(char **env, char *var, char *new_entry)
-{
-	int	i;
-	int	var_len;
-
-	i = 0;
-	var_len = ft_strlen(var);
-	while (env && env[i])
-	{
-		if (ft_strncmp(env[i], var, var_len) == 0 && env[i][var_len] == '=')
-		{
-			free(env[i]);
-			env[i] = new_entry;
-			free(var);
-			return (1);
-		}
-		i++;
-	}
-	return (0);
-}
-
-static int	add_new_variable(t_shell *shell, char *new_entry)
-{
-	char	**new_env;
-	int		count;
-
-	count = 0;
-	if (shell->env)
-		while (shell->env[count])
-			count++;
-	new_env = malloc((count + 2) * sizeof(char *));
-	if (!new_env)
-	{
-		free(new_entry);
-		return (0);
-	}
-	ft_memcpy(new_env, shell->env, count * sizeof(char *));
-	new_env[count] = new_entry;
-	new_env[count + 1] = NULL;
-	if (shell->env)
-		free(shell->env);
-	shell->env = new_env;
-	return (1);
-}
-
-static int	export_process_arg(char *arg, t_shell *shell)
+static char	*validate_export_arg(char *arg, char **value_ptr)
 {
 	char	*var;
-	char	*value;
-	char	*new_entry;
 
-	var = extract_variable_name(arg, &value);
+	*value_ptr = NULL;
+	var = extract_variable_name(arg, value_ptr);
 	if (!var)
-		return (1);
+		return (NULL);
 	if (!is_valid_identifier(var))
 	{
 		ft_putstr_fd("minishell: export: `", 2);
 		ft_putstr_fd(arg, 2);
 		ft_putstr_fd("': not a valid identifier\n", 2);
 		free(var);
-		return (1);
+		return (NULL);
 	}
+	return (var);
+}
+
+static int	export_process_arg(char *arg, t_shell *shell)
+{
+	char	*var;
+	char	*value;
+	int		ret;
+
+	var = validate_export_arg(arg, &value);
+	if (!var)
+		return (1);
 	if (ft_strchr(arg, '=') == NULL)
 	{
-		free(var); 
+		free(var);
 		return (0);
 	}
-	new_entry = create_env_entry(var, value);
-	if (!new_entry)
-	{
-		free(var);
-		return (1); 
-	}
-	if (replace_variable(shell->env, var, new_entry))
-	{
-		return (0); 
-	}
-	if (!add_new_variable(shell, new_entry))
-	{
-		free(var); 
-		return (1); 
-	}
+	ret = set_env_var(shell, var, value);
 	free(var);
-	return (0);
+	return (ret);
 }
 
 int	ft_export(char **args, t_shell *shell)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipes_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 13:36:41 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/22 15:26:31 by lospacce         ###   ########.fr       */
+/*   Updated: 2025/05/01 20:00:12 by fben-ham         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int	execute_command_part2(char **args, t_shell *shell)
 	pipe_count = count_pipes(args);
 	if (pipe_count == 0)
 		return (execute_command_with_redirection(args, shell));
-	return (execute_pipe_without_heredoc(args, shell));
+	return (execute_pipe_logic(args, shell));
 }
 
 void	handle_parent_pipes(int i, int pipe_count, int pipe_fds[2][2],
@@ -59,4 +59,20 @@ void	handle_parent_pipes(int i, int pipe_count, int pipe_fds[2][2],
 	if (i < pipe_count)
 		close(pipe_fds[*current_pipe][1]);
 	*current_pipe = 1 - *current_pipe;
+}
+
+void	free_command_segments(char ***cmd_segments, int count)
+{
+	int	j;
+
+	if (!cmd_segments)
+		return ;
+	j = 0;
+	while (j < count)
+	{
+		if (cmd_segments[j])
+			free_array(cmd_segments[j]);
+		j++;
+	}
+	free(cmd_segments);
 }

@@ -1,11 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_path.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fben-ham <fben-ham@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/01 20:28:45 by fben-ham          #+#    #+#             */
+/*   Updated: 2025/05/01 20:28:46 by fben-ham         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-#include <string.h> // For strerror
-#include <errno.h>  // For errno
-#include <sys/stat.h> // For stat
 
 static int	print_exec_error(char *cmd_path)
 {
-	int		exit_code;
+	int			exit_code;
 	struct stat	st;
 
 	exit_code = 126;
@@ -28,7 +37,7 @@ static int	print_exec_error(char *cmd_path)
 
 void	handle_exec_failure(char *cmd_path, char **cmd_args)
 {
-	int exit_code;
+	int	exit_code;
 
 	ft_putstr_fd("minishell: ", 2);
 	ft_putstr_fd(cmd_path, 2);
