@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   external_cmds.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/26 16:40:00 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/30 18:29:43 by louis            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 int	parse_args(char **args, char **envp)
@@ -26,7 +14,7 @@ t_shell *init_shell(char **envp)
     shell = malloc(sizeof(t_shell));
     if (!shell)
         return (NULL);
-    shell->env = copy_env_safe(envp);
+    shell->env = duplicate_env(envp);
     if (!shell->env)
     {
         free(shell);
@@ -39,6 +27,7 @@ t_shell *init_shell(char **envp)
     shell->original_stdin = dup(STDIN_FILENO);
     if (shell->original_stdin == -1)
     {
+        perror("minishell: dup failed");
         free_env(shell->env);
         free(shell);
         return (NULL);
@@ -59,7 +48,41 @@ void	free_command_segments(char ***cmd_segments, int count)
 	free(cmd_segments);
 }
 
-int	execute_external_command(char **args, t_shell *shell, t_redir_info *redir_info)
+static void	child_process_exec(char *cmd_path, char **args, t_shell *shell,
+								t_redir_info *redir_info)
+{
+	if (redir_info && redir_info->redir_type != 0)
+	{
+		if (apply_redirection(redir_info) == -1)
+		{
+			free(cmd_path);
+			perror("minishell: redirection failed");
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (execve(cmd_path, args, shell->env) == -1)
+	{
+		perror("minishell");
+		free(cmd_path);
+		exit(126);
+	}
+	exit(EXIT_FAILURE);
+}
+
+static int	parent_process_wait(pid_t pid)
+{
+	int	status;
+
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	else if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
+	return (EXIT_FAILURE);
+}
+
+int	execute_external_command(char **args, t_shell *shell,
+								 t_redir_info *redir_info)
 {
 	pid_t	pid;
 	int		status;
@@ -73,40 +96,16 @@ int	execute_external_command(char **args, t_shell *shell, t_redir_info *redir_in
 		ft_putstr_fd(": command not found\n", 2);
 		return (127);
 	}
-
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("minishell: fork failed");
 		free(cmd_path);
-		return (1);
+		return (EXIT_FAILURE);
 	}
 	else if (pid == 0)
-	{
-		if (redir_info && redir_info->redir_type != 0)
-		{
-			if (apply_redirection(redir_info) == -1)
-			{
-				free(cmd_path);
-				exit(EXIT_FAILURE);
-			}
-		}
-
-		if (execve(cmd_path, args, shell->env) == -1)
-		{
-			perror("minishell");
-			free(cmd_path);
-			exit(126);
-		}
-	}
-	else
-	{
-		waitpid(pid, &status, 0);
-		free(cmd_path);
-		if (WIFEXITED(status))
-			return (WEXITSTATUS(status));
-		else if (WIFSIGNALED(status))
-			return (128 + WTERMSIG(status));
-	}
+		child_process_exec(cmd_path, args, shell, redir_info);
+	free(cmd_path);
+	status = parent_process_wait(pid);
 	return (status);
 }

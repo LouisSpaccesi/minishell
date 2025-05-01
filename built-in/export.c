@@ -71,46 +71,13 @@ static int	add_new_variable(t_shell *shell, char *new_entry)
 	return (1);
 }
 
-static int	is_valid_identifier(const char *var)
+static int	handle_invalid_identifier(char *arg, char *var)
 {
-	if (!var || (!ft_isalpha(*var) && *var != '_'))
-		return (0);
-	var++;
-	while (*var)
-	{
-		if (!ft_isalnum(*var) && *var != '_')
-			return (0);
-		var++;
-	}
+	ft_putstr_fd("minishell: export: `", 2);
+	ft_putstr_fd(arg, 2);
+	ft_putstr_fd("': not a valid identifier\n", 2);
+	free(var);
 	return (1);
-}
-
-static char	*create_env_entry(const char *var, const char *value)
-{
-	char	*new_entry;
-	int		i;
-	int		j;
-
-	i = 0;
-	j = 0;
-	if (!value)
-		value = "";
-	new_entry = malloc(ft_strlen(var) + ft_strlen(value) + 2);
-	if (!new_entry)
-		return (NULL);
-	while (var[i])
-	{
-		new_entry[i] = var[i];
-		i++;
-	}
-	new_entry[i++] = '=';
-	while (value[j])
-	{
-		new_entry[i + j] = value[j];
-		j++;
-	}
-	new_entry[i + j] = '\0';
-	return (new_entry);
 }
 
 static int	export_process_arg(char *arg, t_shell *shell)
@@ -123,13 +90,7 @@ static int	export_process_arg(char *arg, t_shell *shell)
 	if (!var)
 		return (1);
 	if (!is_valid_identifier(var))
-	{
-		ft_putstr_fd("minishell: export: `", 2);
-		ft_putstr_fd(arg, 2);
-		ft_putstr_fd("': not a valid identifier\n", 2);
-		free(var);
-		return (1);
-	}
+		return (handle_invalid_identifier(arg, var));
 	if (ft_strchr(arg, '=') == NULL)
 	{
 		free(var);

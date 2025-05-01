@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/24 16:27:26 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/29 17:16:14 by louis            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "tokenizer.h"
 #include "minishell.h"
 
@@ -68,18 +56,16 @@ static char	*read_command_line(t_shell *shell, char ***args)
 		return (NULL);
 	}
 	add_history(rl);
-	*args = tokenize_command_line(rl, shell); // Utiliser notre nouveau tokenizer
-	if (!*args) // Gérer l'échec du tokenizer (ex: quote non fermée)
+	*args = tokenize_command_line(rl, shell);
+	if (!*args)
 	{
 		free(rl);
-		shell->exit_status = 2; // Code d'erreur pour erreur de syntaxe (convention bash)
-		return (NULL); // Indiquer l'échec pour ne pas continuer
+		shell->exit_status = 2;
+		return (NULL);
 	}
 	return (rl);
 }
 
-// Finds the index of the first non-empty argument.
-// Returns -1 if no valid argument is found.
 static int	find_first_valid_arg(char **args)
 {
 	int	i;

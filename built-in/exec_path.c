@@ -1,25 +1,11 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   exec_path.c                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/28 18:29:18 by louis             #+#    #+#             */
-/*   Updated: 2025/04/28 18:30:53 by louis            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-void	handle_exec_failure(char *cmd_path, char **cmd_args)
+static int	print_exec_error(char *cmd_path)
 {
-	int exit_code = 126;
+	int		exit_code;
+	struct stat	st;
 
-	ft_putstr_fd("minishell: ", 2);
-	ft_putstr_fd(cmd_path, 2);
-	ft_putstr_fd(": ", 2);
-
+	exit_code = 126;
 	if (errno == ENOENT)
 	{
 		ft_putendl_fd("command not found", 2);
@@ -27,21 +13,24 @@ void	handle_exec_failure(char *cmd_path, char **cmd_args)
 	}
 	else if (errno == EACCES)
 	{
-		struct stat st;
 		if (stat(cmd_path, &st) == 0 && S_ISDIR(st.st_mode))
-		{
 			ft_putendl_fd("Is a directory", 2);
-		}
 		else
-		{
 			ft_putendl_fd("Permission denied", 2);
-		}
 	}
 	else
-	{
 		ft_putendl_fd(strerror(errno), 2);
-	}
+	return (exit_code);
+}
 
+void	handle_exec_failure(char *cmd_path, char **cmd_args)
+{
+	int exit_code;
+
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(cmd_path, 2);
+	ft_putstr_fd(": ", 2);
+	exit_code = print_exec_error(cmd_path);
 	if (cmd_args)
 		free(cmd_args);
 	if (cmd_path)

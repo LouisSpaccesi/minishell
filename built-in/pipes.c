@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   pipes.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/05 13:45:24 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/30 18:10:56 by louis            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 char	**create_command_segment(char **args, int *start_idx, int seg_size)
@@ -102,16 +90,11 @@ int	execute_pipe_without_heredoc(char **args, t_shell *shell)
 
 	cmd_segments = split_command_by_pipes(args);
 	if (!cmd_segments)
-		return (1); // Erreur de split
-	
-	// Passer le shell à la fonction suivante
+		return (1);
 	status = execute_piped_commands_part1(cmd_segments, shell);
-	
-	// Compter pour libérer correctement
 	pipe_count = 0;
 	while (cmd_segments[pipe_count])
 		pipe_count++;
-	
 	free_command_segments(cmd_segments, pipe_count);
 	return (status);
 }

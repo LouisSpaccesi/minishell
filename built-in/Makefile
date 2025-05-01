@@ -13,7 +13,8 @@ BUILTIN_SRCS = cd.c echo.c env.c exit.c pwd.c export.c unset.c \
                exec_builtin.c pipes.c heredoc_pipes.c heredoc.c utils.c \
                cmd.c pipes_utils_cmd.c heredoc_pipes_utils.c \
                heredoc_utils.c mini_utils.c pipes_utils.c echo_utils.c path.c \
-               exec_path.c signals.c tokenizer.c
+               exec_path.c signals.c tokenizer.c \
+               env_utils.c export_utils.c redirection_utils.c
 
 BUILTIN_OBJS = $(BUILTIN_SRCS:.c=.o)
 

@@ -1,194 +1,33 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   env.c                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/21 14:50:46 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/30 18:29:19 by louis            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-char	*create_env(const char *var, const char *value)
+static void	print_env_array(char **env_array)
 {
-	char	*new_entry;
-	int		i;
-	int		j;
+	int	i;
 
 	i = 0;
-	j = 0;
-	new_entry = malloc(ft_strlen(var) + ft_strlen(value) + 2);
-	if (!new_entry)
-		return (NULL);
-	while (var[i])
+	while (env_array && env_array[i])
 	{
-		new_entry[i] = var[i];
+		ft_putstr_fd(env_array[i], STDOUT_FILENO);
+		write(STDOUT_FILENO, "\n", 1);
 		i++;
 	}
-	new_entry[i++] = '=';
-	j = 0;
-	while (value[j])
+}
+
+int	ft_env_builtin(t_shell *shell)
+{
+	t_env_var	*current;
+
+	if (!shell)
+		return (1);
+	print_env_array(shell->env);
+	current = shell->custom_env;
+	while (current)
 	{
-		new_entry[i + j] = value[j];
-		j++;
+		ft_putstr_fd(current->name, STDOUT_FILENO);
+		write(STDOUT_FILENO, "=", 1);
+		ft_putstr_fd(current->value, STDOUT_FILENO);
+		write(STDOUT_FILENO, "\n", 1);
+		current = current->next;
 	}
-	new_entry[i + j] = '\0';
-	return (new_entry);
-}
-
-char **copy_env_safe(char **env)
-{
-    int count = 0;
-    char **new_env;
-    int i;
-    
-    // Compter les entrées
-    while (env[count])
-        count++;
-    
-    // Allouer le nouveau tableau
-    new_env = malloc((count + 1) * sizeof(char *));
-    if (!new_env)
-        return NULL;
-    
-    // Copier chaque entrée
-    i = 0;
-    while (i < count)
-    {
-        new_env[i] = ft_strdup(env[i]);
-        if (!new_env[i])
-        {
-            // En cas d'erreur, libérer ce qui a été alloué
-            while (--i >= 0)
-                free(new_env[i]);
-            free(new_env);
-            return NULL;
-        }
-        i++;
-    }
-    new_env[count] = NULL;
-    
-    return new_env;
-}
-
-void	copy_env(char **new_env, char **env, int count)
-{
-	int	j;
-
-	j = 0;
-	while (j < count)
-	{
-		new_env[j] = env[j];
-		j++;
-	}
-}
-
-int ft_env_builtin(t_shell *shell)
-{
-    int i = 0;
-    t_env_var *current;
-
-    // Afficher l'environnement d'origine
-    while (shell->env && shell->env[i])
-    {
-        if (shell->env[i] != NULL)
-        {
-            write(STDOUT_FILENO, shell->env[i], ft_strlen(shell->env[i]));
-            write(STDOUT_FILENO, "\n", 1);
-        }
-        i++;
-    }
-
-    // Afficher les variables personnalisées
-    current = shell->custom_env;
-    while (current)
-    {
-        write(STDOUT_FILENO, current->name, ft_strlen(current->name));
-        write(STDOUT_FILENO, "=", 1);
-        write(STDOUT_FILENO, current->value, ft_strlen(current->value));
-        write(STDOUT_FILENO, "\n", 1);
-        current = current->next;
-    }
-    return (0);
-}
-
-// Function to find the index of an environment variable
-static int	find_env_var_index(const char *var_name, char **envp)
-{
-	int i;
-	size_t len;
-
-	i = 0;
-	len = ft_strlen(var_name);
-	while (envp[i])
-	{
-		if (ft_strncmp(envp[i], var_name, len) == 0 && envp[i][len] == '=')
-			return (i);
-		i++;
-	}
-	return (-1); // Not found
-}
-
-// Function to get the value of an environment variable
-char	*get_env_value(char **envp, const char *var_name)
-{
-	int		idx;
-	char	*entry;
-	char	*equal_sign;
-
-	if (!envp || !var_name)
-		return (NULL);
-	idx = find_env_var_index(var_name, envp);
-	if (idx == -1)
-		return (NULL); // Not found
-	entry = envp[idx];
-	equal_sign = ft_strchr(entry, '=');
-	if (!equal_sign)
-		return (NULL); // Should not happen for standard env vars
-	return (equal_sign + 1); // Return pointer to the value part
-}
-
-// Function to set/update an environment variable
-// Returns 0 on success, 1 on failure (e.g., memory allocation)
-int	set_env_var(t_shell *shell, const char *var, const char *value)
-{
-	int			idx;
-	char		*new_entry;
-	char		**new_env;
-	size_t		current_size;
-
-	if (!var || !value || !shell)
-		return (1); // Invalid arguments
-
-	idx = find_env_var_index(var, shell->env); // Corrected argument order
-	new_entry = create_env(var, value);
-	if (!new_entry)
-		return (1); // Malloc failure
-
-	if (idx != -1)
-	{ // Variable exists, update it
-		free(shell->env[idx]);
-		shell->env[idx] = new_entry;
-	}
-	else
-	{ // Variable does not exist, add it
-		current_size = 0;
-		while (shell->env[current_size])
-			current_size++;
-		new_env = realloc(shell->env, (current_size + 2) * sizeof(char *));
-		if (!new_env)
-		{
-			free(new_entry);
-			perror("minishell: set_env_var: realloc failed");
-			return (1);
-		}
-		shell->env = new_env;
-		shell->env[current_size] = new_entry;
-		shell->env[current_size + 1] = NULL;
-	}
-
-	return (0); // Success
+	return (0);
 }

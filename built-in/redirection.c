@@ -1,54 +1,34 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   redirection.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lospacce <lospacce@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/04 13:41:24 by lospacce          #+#    #+#             */
-/*   Updated: 2025/05/01 12:45:00 by Cascade          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-// Type 1: >
-// Type 2: >>
-// Type 3: <<
-// Type 4: <
-static int  get_redirection_type(char *arg)
+static int	get_redirection_type(char *arg)
 {
-    if (!arg)
-        return (0);
-    if (ft_strncmp(arg, ">>", 3) == 0)
-        return (2);
-    else if (ft_strncmp(arg, ">", 2) == 0)
-        return (1);
-    else if (ft_strncmp(arg, "<<", 3) == 0)
-        return (3);
-    else if (ft_strncmp(arg, "<", 2) == 0)
-        return (4);
-    return (0);
+	if (!arg)
+		return (0);
+	if (ft_strncmp(arg, ">>", 3) == 0)
+		return (2);
+	else if (ft_strncmp(arg, ">", 2) == 0)
+		return (1);
+	else if (ft_strncmp(arg, "<<", 3) == 0)
+		return (3);
+	else if (ft_strncmp(arg, "<", 2) == 0)
+		return (4);
+	return (0);
 }
 
-// Helper function to remove redirection operator and filename from args
-// Shifts args[index+2] and onwards two positions to the left.
-static void remove_redirection_args(char **args, int index)
+static void	remove_redirection_args(char **args, int index)
 {
-    int i;
+	int i;
 
-    // No need to free args[index] or args[index+1] here,
-    // they are part of the original args array managed elsewhere.
-    if (!args || !args[index] || !args[index + 1])
-        return;
-    i = index;
-    while (args[i + 2])
-    {
-        args[i] = args[i + 2];
-        i++;
-    }
-    args[i] = NULL;
-    args[i + 1] = NULL; // Ensure the next slot is also NULL
+	if (!args || !args[index] || !args[index + 1])
+		return;
+	i = index;
+	while (args[i + 2])
+	{
+		args[i] = args[i + 2];
+		i++;
+	}
+	args[i] = NULL;
+	args[i + 1] = NULL;
 }
 
 int	find_last_redirection(char **args, int *redirection_type)
@@ -86,7 +66,8 @@ int	ft_restore_fd(int original_fd, int saved_fd)
 	{
 		if (dup2(saved_fd, original_fd) == -1)
 		{
-			perror("minishell: restore fd failed");
+			ft_putstr_fd("minishell: restore fd failed: ", STDERR_FILENO);
+			ft_putendl_fd(strerror(errno), STDERR_FILENO);
 			close(saved_fd);
 			return (-1);
 		}
@@ -112,11 +93,11 @@ int	parse_redirection(char **args, t_redir_info *redir_info)
 		return (-1);
 	if (last_redir_index == -2)
 		return (-2);
-	redir_info->type = redir_type;
+	redir_info->redir_type = redir_type;
 	redir_info->filename = args[last_redir_index + 1];
-	if (redir_info->type == 1 || redir_info->type == 2)
+	if (redir_info->redir_type == 1 || redir_info->redir_type == 2)
 		redir_info->original_fd = STDOUT_FILENO;
-	else if (redir_info->type == 3 || redir_info->type == 4)
+	else if (redir_info->redir_type == 3 || redir_info->redir_type == 4)
 		redir_info->original_fd = STDIN_FILENO;
 	else
 		redir_info->original_fd = -1;
@@ -129,13 +110,13 @@ int	apply_redirection(t_redir_info *redir_info)
 	int	saved_fd;
 
 	saved_fd = -1;
-	if (redir_info->type == 1)
+	if (redir_info->redir_type == 1)
 		saved_fd = ft_redirect_output(redir_info->filename);
-	else if (redir_info->type == 2)
+	else if (redir_info->redir_type == 2)
 		saved_fd = ft_redirect_output_append(redir_info->filename);
-	else if (redir_info->type == 3)
+	else if (redir_info->redir_type == 3)
 		saved_fd = ft_redirect_input_heredoc(redir_info->filename);
-	else if (redir_info->type == 4)
+	else if (redir_info->redir_type == 4)
 		saved_fd = ft_redirect_input(redir_info->filename);
 	return (saved_fd);
 }

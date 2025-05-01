@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   echo.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: louis <louis@student.42.fr>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/21 15:04:38 by lospacce          #+#    #+#             */
-/*   Updated: 2025/04/29 17:04:10 by louis            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 static int	is_n_option(char *arg)
@@ -33,17 +21,15 @@ int	ft_echo(char **args, t_shell *shell)
 	int i;
 	int no_newline;
 
-	(void)shell; // Mark shell as unused for now, might be needed for expansion later
+	(void)shell;
 
 	i = 1;
 	no_newline = 0;
-	// Check for -n option(s)
 	while (args[i] && is_n_option(args[i]))
 	{
 		no_newline = 1;
 		i++;
 	}
-	// Print arguments
 	while (args[i])
 	{
 		write(1, args[i], ft_strlen(args[i]));

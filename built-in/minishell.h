@@ -71,12 +71,11 @@ typedef struct s_hd_pipe
 	pid_t	pid2;
 }			t_hd_pipe;
 
-// Structure to hold information about a single parsed redirection
 typedef struct s_redir_info
 {
-	int		redir_type; // 1(>), 2(>>), 3(<<), 4(<), 0(none)
+	int		redir_type;
 	char	*filename;
-	int		original_fd; // STDIN_FILENO or STDOUT_FILENO
+	int		original_fd;
 } t_redir_info;
 
 void		close_and_free(int *pipefd, char **cmd1, char **cmd2, int temp_fd);
@@ -105,7 +104,6 @@ void		handle_complex_builtins(char **args, t_shell *shell);
 void		handle_env_builtins(char **args, t_shell *shell);
 void		handle_echo_cd(char **args, char **envp);
 int			find_last_redirection(char **args, int *redirection_type);
-/* Fonctions spécifiques pour les cas complexes */
 int			execute_heredoc_pipe(char **args, t_shell *shell);
 t_shell		*init_shell(char **envp);
 void		free_env(char **env);
@@ -113,8 +111,6 @@ void		find_special_tokens(char **args, int *heredoc_idx, int *pipe_idx);
 int			init_heredoc_pipe(t_hd_pipe *hp, char **args, int heredoc_idx,
 				int pipe_idx);
 int			setup_second_command(t_hd_pipe *hp, char **args, int pipe_idx);
-
-/* Fonctions de gestion des pipes */
 int			count_pipes(char **args);
 char		***split_command_by_pipes(char **args);
 int			execute_simple_command(char **args, char **env_copy);
@@ -127,14 +123,11 @@ int			execute_command(char **args, char **env_copy);
 int			execute_command_part1(char **args, t_shell *shell);
 int			execute_command_part2(char **args, t_shell *shell);
 void		free_command_segments(char ***cmd_segments, int count);
-
-/* Fonctions utilitaires */
 int			count_args(char **args, int start);
 void		close_and_free(int *pipefd, char **cmd1, char **cmd2, int temp_fd);
 void		read_heredoc_content(int temp_fd, char *delimiter);
 void		free_commands(char **cmd1, char **cmd2, char *temp_file);
 void		free_command_segments(char ***cmd_segments, int count);
-
 char		**create_command_array(char **args, int start, int end);
 void		execute_first_command(char **cmd1, int temp_fd, int *pipefd);
 void		execute_second_command(char **cmd2, int *pipefd, int temp_fd);
@@ -162,8 +155,10 @@ void		ft_restore_input(int saved_stdin);
 int			ft_restore_fd(int original_fd, int saved_fd);
 int			parse_redirection(char **args, t_redir_info *redir_info);
 int			apply_redirection(t_redir_info *redir_info);
+int 		ft_redirect_output(const char *filename);
+int 		ft_redirect_output_append(const char *filename);
+int 		ft_redirect_input(const char *filename);
 int			ft_redirect_input_heredoc(char *delimiter);
-// Path utils
 char		*find_command_path(char *command, char **envp);
 char		*build_full_path(char *path, char *cmd);
 char		*search_in_paths(char **paths, char *cmd);
@@ -173,28 +168,22 @@ void		exec_cmd_child(char *cmd_path, char **args, char **envp,
 				int arg_count);
 int			handle_command_not_found(char *cmd);
 int			count_cmd_args(char **args);
-
 void	handle_sigint(int sig);
 void	setup_signals(void);
 void	setup_exec_signals(void);
 void	restore_terminal(void);
 int	is_eof(char *line);
-char **copy_env_safe(char **env);
-
-// Tokenizer & Expansion
 char	**tokenize_command_line(const char *line, t_shell *shell);
 char	*get_env_value(char **envp, const char *var_name);
 int		set_env_var(t_shell *shell, const char *varname, const char *value);
-
-// Builtin functions
+int		find_env_var_index(const char *var_name, char **envp);
+char	*create_env_entry(const char *var, const char *value);
+int		is_valid_identifier(const char *var);
+char		**duplicate_env(char **envp);
+int			execute_heredoc_pipe(char **args, t_shell *shell);
 int execute_builtin(char **args, t_shell *shell);
-// External command execution
 int				execute_external_command(char **args, t_shell *shell, t_redir_info *redir_info);
-
-// Path utils
 char			*find_command_path(char *command, char **envp);
-
-// Cleanup function
 void			free_shell(t_shell *shell);
 
 #endif

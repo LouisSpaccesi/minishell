@@ -27,7 +27,7 @@ void	remove_redirection_args(char **args, int index)
 	args[i] = NULL; args[i + 1] = NULL;
 }
 
-int	ft_redirect_output(char *filename)
+int	ft_redirect_output(const char *filename)
 {
 	int	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	int	saved_stdout = dup(STDOUT_FILENO);
@@ -37,7 +37,7 @@ int	ft_redirect_output(char *filename)
 	close(fd); return (saved_stdout);
 }
 
-int	ft_redirect_output_append(char *filename)
+int	ft_redirect_output_append(const char *filename)
 {
 	int	fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	int	saved_stdout = dup(STDOUT_FILENO);
@@ -47,7 +47,7 @@ int	ft_redirect_output_append(char *filename)
 	close(fd); return (saved_stdout);
 }
 
-int	ft_redirect_input(char *filename)
+int	ft_redirect_input(const char *filename)
 {
 	int	fd = open(filename, O_RDONLY);
 	int	saved_stdin = dup(STDIN_FILENO);

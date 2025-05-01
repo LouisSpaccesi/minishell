@@ -1,31 +1,4 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   unset.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lospacce < lospacce@student.42angouleme    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/26 16:00:48 by lospacce          #+#    #+#             */
-/*   Updated: 2025/03/26 16:10:49 by lospacce         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
-#include <ctype.h>
-
-static int is_valid_identifier(const char *var)
-{
-	if (!var || (!ft_isalpha(*var) && *var != '_'))
-		return (0);
-	var++;
-	while (*var)
-	{
-		if (!ft_isalnum(*var) && *var != '_')
-			return (0);
-		var++;
-	}
-	return (1);
-}
 
 static void	ft_unset_internal(char *args, t_shell *shell)
 {
@@ -56,10 +29,11 @@ static void	ft_unset_internal(char *args, t_shell *shell)
 
 int	ft_unset_command(char **args, t_shell *shell)
 {
-	int	i = 1;
-	int	status = 0;
+	int	i;
+	int	status;
 
-	// Iterate through arguments (variables to unset)
+	i = 1;
+	status = 0;
 	while (args[i])
 	{
 		if (!is_valid_identifier(args[i]))
@@ -67,14 +41,11 @@ int	ft_unset_command(char **args, t_shell *shell)
 			ft_putstr_fd("minishell: unset: `", 2);
 			ft_putstr_fd(args[i], 2);
 			ft_putstr_fd("': not a valid identifier\n", 2);
-			status = 1; // Mark status as failed
+			status = 1;
 		}
 		else
-		{
-			// Only unset if the identifier is valid
 			ft_unset_internal(args[i], shell);
-		}
 		i++;
 	}
-	return (status); // Return 0 if all processed identifiers were valid, 1 otherwise
+	return (status);
 }
